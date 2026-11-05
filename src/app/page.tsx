@@ -44,36 +44,9 @@ export default function LandingPage() {
     },
   ];
 
-  const testimonials = [
-    {
-      name: "Christian Mugisha",
-      handle: "@cmugisha",
-      role: "Kigali Tech Commuter",
-      text: "ParkZone feels like the future of Kigali. Finding an open stall at Kigali Heights used to take 20 minutes; now I reserve it before I leave Kimihurura.",
-    },
-    {
-      name: "Aline Uwase",
-      handle: "@aline_u",
-      role: "EV Motorist (BYD Atto 3)",
-      text: "Having live 60 kW DC charger telemetry right on my phone with zero parking surcharge is a dream. The design is as clean and thoughtful as Popcorn.",
-    },
-    {
-      name: "Eric Habimana",
-      handle: "@e_habimana",
-      role: "Fleet Operations Manager",
-      text: "Managing 14 logistics vans across Kigali with automatic 2,000 RWF daily caps and consolidated VAT invoices saved our company hours of accounting every month.",
-    },
-    {
-      name: "Jean-Paul Nsengiyumva",
-      handle: "@jp_nsengi",
-      role: "Downtown Motorist",
-      text: "The 15-minute free grace period and instant MTN MoMo push checkout make quick downtown errands completely frictionless. Zero parking tickets ever since.",
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-[#FFFFFF] text-[#111111] font-sans antialiased selection:bg-neutral-900 selection:text-white">
-      {/* ────────────────── 1. NAVBAR (POPCORN.SPACE EXACT ARCHITECTURE) ────────────────── */}
+      {/* ────────────────── 1. NAVBAR (POPCORN CLEAN ARCHITECTURE - NO LOGIN/SIGNUP) ────────────────── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-neutral-100 px-6 sm:px-10 py-4 transition-all">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo using real ParkZone image asset */}
@@ -95,8 +68,8 @@ export default function LandingPage() {
             <a href="#coverage" className="hover:text-black transition-colors">
               Coverage
             </a>
-            <a href="#manifesto" className="hover:text-black transition-colors">
-              Manifesto
+            <a href="#dispatch" className="hover:text-black transition-colors">
+              Dispatch
             </a>
             <a href="#pricing" className="hover:text-black transition-colors">
               Pricing
@@ -106,25 +79,19 @@ export default function LandingPage() {
             </a>
           </nav>
 
-          {/* Actions */}
+          {/* Download App Action (No Login/Signup buttons) */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="px-4 py-2 text-xs font-semibold text-neutral-700 hover:text-black transition-colors"
+            <a
+              href="#download"
+              className="px-5 py-2 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-semibold tracking-tight transition-all shadow-xs hover:scale-105 active:scale-95 flex items-center gap-1.5"
             >
-              Log In
-            </Link>
-            <Link
-              href="/admin"
-              className="px-5 py-2.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-semibold tracking-tight transition-all shadow-xs hover:scale-105 active:scale-95"
-            >
-              Sign Up
-            </Link>
+              <span>Download App</span>
+            </a>
           </div>
         </div>
       </header>
 
-      {/* ────────────────── 2. HERO SECTION (POPCORN.SPACE TYPOGRAPHY & RAW PNG PHONES) ────────────────── */}
+      {/* ────────────────── 2. HERO SECTION (APP STORE & PLAY STORE BUTTONS + RAW PNG PHONES) ────────────────── */}
       <section className="pt-16 sm:pt-24 pb-16 sm:pb-24 px-6 sm:px-10 max-w-6xl mx-auto">
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-5">
           {/* Announcement Badge */}
@@ -166,19 +133,46 @@ export default function LandingPage() {
             *Subject to City of Kigali municipal mobility bylaws
           </div>
 
-          {/* Hero CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
-            <Link
-              href="/login"
-              className="px-8 py-3.5 rounded-full bg-black hover:bg-neutral-800 text-white text-sm font-semibold tracking-tight transition-all shadow-md hover:scale-105 active:scale-95"
-            >
-              Sign Up
-            </Link>
+          {/* Hero Download Badges: App Store & Google Play */}
+          <div id="download" className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            {/* Apple App Store */}
             <a
-              href="#pricing"
-              className="text-sm font-semibold text-neutral-700 hover:text-black transition-colors underline underline-offset-4 decoration-neutral-300"
+              href="https://apps.apple.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black hover:bg-neutral-800 text-white transition-all shadow-md hover:scale-105 active:scale-95"
             >
-              See pricing
+              <svg className="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.67-.82 1.13-1.96 1-3.1-.98.04-2.17.65-2.87 1.47-.62.72-1.16 1.88-1.01 2.99 1.1.08 2.21-.54 2.88-1.36z" />
+              </svg>
+              <div className="text-left">
+                <div className="text-[9px] uppercase tracking-wider text-neutral-400 font-semibold leading-none">
+                  Download on the
+                </div>
+                <div className="text-xs sm:text-sm font-bold tracking-tight leading-tight mt-0.5">
+                  App Store
+                </div>
+              </div>
+            </a>
+
+            {/* Google Play Store */}
+            <a
+              href="https://play.google.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black hover:bg-neutral-800 text-white transition-all shadow-md hover:scale-105 active:scale-95"
+            >
+              <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
+                <path d="M3.609 1.814L13.793 12 3.61 22.186a1.99 1.99 0 0 1-.61-1.423V3.237c0-.54.22-1.03.609-1.423zm11.238 11.24l2.58 2.58-12.35 7.126 9.77-9.706zm0-2.108L5.077 1.24l12.35 7.126-2.58 2.58zm1.054 1.054l3.19-1.84a1.8 1.8 0 0 1 0 3.12l-3.19-1.28z" />
+              </svg>
+              <div className="text-left">
+                <div className="text-[9px] uppercase tracking-wider text-neutral-400 font-semibold leading-none">
+                  GET IT ON
+                </div>
+                <div className="text-xs sm:text-sm font-bold tracking-tight leading-tight mt-0.5">
+                  Google Play
+                </div>
+              </div>
             </a>
           </div>
         </div>
@@ -210,7 +204,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 3. A KIGALI PLATE, WITH PEACE OF MIND (POPCORN SECTION 1) ────────────────── */}
+      {/* ────────────────── 3. A KIGALI PLATE, WITH PEACE OF MIND ────────────────── */}
       <section id="features" className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
         <div className="max-w-2xl mb-14">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
@@ -261,117 +255,183 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 4. WORKS AT KIGALI HEIGHTS. WORKS EVERYWHERE (POPCORN SECTION 2) ────────────────── */}
+      {/* ────────────────── 4. WORKS AT KIGALI HEIGHTS. WORKS EVERYWHERE (IMAGE 2 CLONE - CENTRAL RADAR/GLOBE + 4 CALLOUTS) ────────────────── */}
       <section id="coverage" className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
-        <div className="max-w-2xl mb-14">
+        <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
-            Works at Kigali Heights. Works everywhere.
+            Works at Kigali Heights. <br />
+            Works everywhere.
           </h2>
           <p className="text-base text-neutral-500 mt-3 font-normal">
-            Experience premium municipal sensor coverage across Downtown, Nyarutarama, and 50+ stations.
+            Experience premium municipal sensor coverage across Downtown, Nyarutarama, and 50+ facilities.
           </p>
         </div>
 
-        {/* 4 Feature Items */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="space-y-2 p-6 rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-400 transition-all">
-            <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Station Coverage</div>
-            <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">Optical ANPR Mesh</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
-              Powered by high-precision optical recognition cameras and ultrasonic ground loop sensors across all hubs.
-            </p>
-          </div>
+        {/* Central Graphic with 4 Symmetrical Callouts (Popcorn.space Image 2 exact clone) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
+          {/* Left Column (2 Callouts) */}
+          <div className="lg:col-span-3 space-y-12 text-center lg:text-left order-2 lg:order-1">
+            {/* Callout 1 */}
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+                <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                  <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
+                Citywide Coverage
+              </h4>
+              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+                Powered by optical ANPR camera gates across all Kigali municipal sectors.
+              </p>
+            </div>
 
-          <div className="space-y-2 p-6 rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-400 transition-all">
-            <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">EV Fast Charging</div>
-            <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">60kW DC Rapid Hubs</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
-              Power up your electric vehicle with 0 RWF parking fees during active charging sessions.
-            </p>
-          </div>
-
-          <div className="space-y-2 p-6 rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-400 transition-all">
-            <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Mobile Checkout</div>
-            <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">MTN &amp; Airtel MoMo</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
-              Automatic USSD push prompts sent straight to your phone. Pay in one tap with compliant digital VAT receipts.
-            </p>
-          </div>
-
-          <div className="space-y-2 p-6 rounded-2xl bg-white border border-neutral-200/80 hover:border-neutral-400 transition-all">
-            <div className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Compliance</div>
-            <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">Irembo Cloud Sync</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
-              Real-time audit log sync with Rwanda National Police and Irembo guarantees zero false citations.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ────────────────── 5. HUNDREDS OF STORIES. YOURS NEXT (POPCORN REVIEWS) ────────────────── */}
-      <section className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-14">
-          <div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight">
-              Hundreds of journeys. Yours next.
-            </h2>
-            <div className="flex items-center gap-2 mt-2 text-sm text-neutral-600">
-              <span>Rated</span>
-              <strong className="text-neutral-900 font-extrabold">4.9</strong>
-              <span>from 1K+ verified Kigali motorists &amp; fleet drivers.</span>
+            {/* Callout 2 */}
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+                <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+              </div>
+              <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
+                Smart Telemetry
+              </h4>
+              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+                Real-time ultrasonic loop sensors track every single bay and stall occupancy.
+              </p>
             </div>
           </div>
-        </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {testimonials.map((t, i) => (
-            <div
-              key={i}
-              className="p-8 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all space-y-4"
-            >
-              <p className="text-sm text-neutral-700 leading-relaxed font-normal">
-                &ldquo;{t.text}&rdquo;
-              </p>
-              <div className="flex items-center gap-3 pt-2">
-                <div className="w-9 h-9 rounded-full bg-black text-white text-xs font-bold flex items-center justify-center">
-                  {t.name.slice(0, 2).toUpperCase()}
+          {/* Center Column: Dotted Radar Globe Illustration */}
+          <div className="lg:col-span-6 flex justify-center items-center order-1 lg:order-2">
+            <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-b from-neutral-50 to-neutral-100/80 border border-neutral-200/70 shadow-inner flex items-center justify-center p-6">
+              {/* Concentric telemetry rings */}
+              <div className="absolute inset-4 rounded-full border border-dashed border-neutral-300 animate-[spin_60s_linear_infinite]" />
+              <div className="absolute inset-12 rounded-full border border-neutral-200" />
+              <div className="absolute inset-20 rounded-full border border-dashed border-emerald-300/80" />
+
+              {/* Center Kigali Municipal Hub Node */}
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center shadow-lg">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/picon.png" alt="ParkZone" className="w-10 h-10 object-contain rounded-full" />
                 </div>
-                <div>
-                  <div className="text-xs font-bold text-neutral-900">{t.name}</div>
-                  <div className="text-[10px] text-neutral-400 font-medium">{t.handle} · {t.role}</div>
+                <div className="mt-3 px-3 py-1 rounded-full bg-white border border-neutral-200 text-[10px] font-bold text-neutral-800 shadow-2xs flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Kigali Grid Live</span>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ────────────────── 6. THE BEST FEATURE? THE HUMANS (POPCORN DISPATCH) ────────────────── */}
-      <section className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
-        <div className="bg-[#FAFAFA] rounded-[36px] p-8 sm:p-14 border border-neutral-200/80 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="max-w-xl space-y-3">
-            <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
-              24/7 Field Support
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight leading-tight">
-              The best feature? The marshals &amp; dispatch.
-            </h2>
-            <p className="text-sm text-neutral-500 leading-relaxed font-normal">
-              Fast and reliable municipal dispatch. Helping with bay allocations, EV charger connectivity, and citation reviews without wait times.
-            </p>
           </div>
 
-          <a
-            href="#contact"
-            className="px-8 py-3.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs sm:text-sm font-semibold tracking-tight transition-all shadow-md shrink-0 hover:scale-105 active:scale-95"
-          >
-            Get Help
-          </a>
+          {/* Right Column (2 Callouts) */}
+          <div className="lg:col-span-3 space-y-12 text-center lg:text-left order-3">
+            {/* Callout 3 */}
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-emerald-600 shadow-2xs">
+                <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+              </div>
+              <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
+                60kW DC EV Hubs
+              </h4>
+              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+                Rapid charging stations with 0 RWF parking fees during active charging.
+              </p>
+            </div>
+
+            {/* Callout 4 */}
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+                <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                  <line x1="12" y1="18" x2="12.01" y2="18" />
+                </svg>
+              </div>
+              <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
+                Instant MoMo
+              </h4>
+              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+                Automated USSD prompt on your phone for instant, frictionless gate departure.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ────────────────── 7. ONE PLAN THAT DOES IT ALL (POPCORN TWO CARDS) ────────────────── */}
+      {/* ────────────────── 5. THE BEST FEATURE? THE HUMANS (IMAGE 1 CLONE - REALISTIC CHAT THREAD) ────────────────── */}
+      <section id="dispatch" className="py-24 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100">
+        <div className="text-center max-w-xl mx-auto mb-14">
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
+            The best feature? <br />
+            The marshals.
+          </h2>
+          <p className="text-base text-neutral-500 mt-3 font-normal leading-relaxed">
+            Fast and reliable municipal dispatch. <br />
+            Helping with bay allocation, EV charging, and a few laughs.
+          </p>
+        </div>
+
+        {/* Realistic Chat Bubbles Thread (Popcorn.space Image 1 exact clone) */}
+        <div className="max-w-md mx-auto space-y-4">
+          {/* Message 1 (Driver: Aline) */}
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              AL
+            </div>
+            <div className="flex-1 bg-neutral-100/90 rounded-2xl rounded-tl-sm p-4 border border-neutral-200/70 shadow-2xs">
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="font-bold text-neutral-900">Aline</span>
+                <span className="text-neutral-400">14:15</span>
+              </div>
+              <p className="text-xs text-neutral-700 leading-relaxed">
+                I&apos;m arriving at Kigali Heights underground, is the 60kW DC charger bay free?
+              </p>
+            </div>
+          </div>
+
+          {/* Message 2 (Dispatch Lead: Eric) */}
+          <div className="flex items-start gap-3 justify-end">
+            <div className="flex-1 bg-white rounded-2xl rounded-tr-sm p-4 border border-neutral-200/90 shadow-sm max-w-sm text-left">
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="font-bold text-neutral-900 flex items-center gap-1.5">
+                  Eric, Dispatch Lead
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-neutral-400">14:16</span>
+              </div>
+              <p className="text-xs text-neutral-800 leading-relaxed">
+                Bay EV-02 is clear and reserved for your plate RAD 892 B! Barrier will lift automatically.
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              ER
+            </div>
+          </div>
+
+          {/* Message 3 (Driver: Aline) */}
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+              AL
+            </div>
+            <div className="flex-1 bg-neutral-100/90 rounded-2xl rounded-tl-sm p-4 border border-neutral-200/70 shadow-2xs">
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="font-bold text-neutral-900">Aline</span>
+                <span className="text-neutral-400">14:17</span>
+              </div>
+              <p className="text-xs text-neutral-700 leading-relaxed">
+                Barrier lifted in 0.4s, amazing five stars
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 6. ONE PLAN THAT DOES IT ALL (TWO CARDS) ────────────────── */}
       <section className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
         <div className="max-w-2xl mb-14">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
@@ -393,12 +453,12 @@ export default function LandingPage() {
                 Standard transient parking across Kigali with automated 2,000 RWF daily caps, 15m free grace periods, and instant MoMo push checkout.
               </p>
             </div>
-            <Link
-              href="/login"
+            <a
+              href="#pricing"
               className="text-xs font-bold text-neutral-900 hover:text-black underline underline-offset-4 decoration-neutral-300"
             >
-              Learn more →
-            </Link>
+              See pricing →
+            </a>
           </div>
 
           {/* Card 2: Commercial Fleet */}
@@ -418,13 +478,13 @@ export default function LandingPage() {
               href="#contact"
               className="text-xs font-bold text-neutral-900 hover:text-black underline underline-offset-4 decoration-neutral-300"
             >
-              Learn more →
+              Contact dispatch →
             </a>
           </div>
         </div>
       </section>
 
-      {/* ────────────────── 8. WHY DOES CITY PARKING FEEL STUCK IN THE 90S? (MANIFESTO) ────────────────── */}
+      {/* ────────────────── 7. WHY DOES CITY PARKING FEEL STUCK IN THE 90S? (MANIFESTO) ────────────────── */}
       <section id="manifesto" className="py-24 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100 text-center">
         <h2 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
           Why does city parking feel stuck in the 90s?
@@ -437,78 +497,92 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ────────────────── 9. GET CONNECTED IN 3 STEPS ────────────────── */}
-      <section className="py-20 px-6 sm:px-10 max-w-5xl mx-auto border-t border-neutral-100">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
-            Get parked in 3 simple steps.
-          </h2>
-        </div>
+      {/* ────────────────── 8. DUAL OVERLAPPING CARDS + CENTER PHONE (IMAGE 3 EXACT CLONE) ────────────────── */}
+      <section id="pricing" className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
+        <div className="relative w-full max-w-5xl mx-auto">
+          {/* Dual Cards Container */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+            {/* Left Card: Get parked in 5 minutes (Soft Gradient) */}
+            <div className="p-8 sm:p-12 rounded-[36px] bg-gradient-to-br from-neutral-50 via-emerald-50/20 to-neutral-100 border border-neutral-200/80 flex flex-col justify-between min-h-[380px]">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight leading-tight">
+                  Get parked <br />
+                  in 5 minutes.
+                </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="text-3xl font-black text-neutral-300">01</div>
-            <h4 className="text-lg font-bold text-neutral-900">Sign up plate</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Register your Rwandan license plate once in under 60 seconds with your phone number.
-            </p>
-          </div>
+                <div className="mt-8 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-white border border-neutral-300 text-xs font-bold text-neutral-800 flex items-center justify-center shrink-0 shadow-2xs">
+                      1
+                    </span>
+                    <span className="text-sm font-semibold text-neutral-800">Sign up plate</span>
+                  </div>
 
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="text-3xl font-black text-neutral-300">02</div>
-            <h4 className="text-lg font-bold text-neutral-900">Drive in &amp; park</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Optical ANPR cameras scan your plate and raise barriers automatically in 0.4 seconds.
-            </p>
-          </div>
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-white border border-neutral-300 text-xs font-bold text-neutral-800 flex items-center justify-center shrink-0 shadow-2xs">
+                      2
+                    </span>
+                    <span className="text-sm font-semibold text-neutral-800">Drive in &amp; park</span>
+                  </div>
 
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="text-3xl font-black text-emerald-500">03</div>
-            <h4 className="text-lg font-bold text-neutral-900">You&apos;re cleared!</h4>
-            <p className="text-xs text-neutral-500 leading-relaxed">
-              Drive out seamlessly. 15m free grace period or automated MoMo push with 2,000 RWF cap.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ────────────────── 10. POPCORN SIGNATURE DARK PRICING CARD ────────────────── */}
-      <section id="pricing" className="py-20 px-6 sm:px-10 max-w-5xl mx-auto">
-        <div className="relative w-full overflow-hidden bg-[#121417] text-white rounded-[36px] p-8 sm:p-14 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-4 max-w-md">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-              Statutory Municipal Rate
-            </span>
-            <h3 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.05]">
-              One plan, <br />
-              one price.
-            </h3>
-            <p className="text-xs sm:text-sm text-neutral-400 font-normal leading-relaxed">
-              Standard 300 RWF/hr transient parking across Kigali, automatically capped at 2,000 RWF daily maximum. Unlimited citywide re-entries with zero surprise fees.
-            </p>
-          </div>
-
-          <div className="text-right flex flex-col items-end gap-5">
-            <div>
-              <div className="text-5xl sm:text-7xl font-extrabold tracking-tight text-white leading-none">
-                2,000
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
+                      3
+                    </span>
+                    <span className="text-sm font-bold text-emerald-900">You&apos;re Cleared!</span>
+                  </div>
+                </div>
               </div>
-              <div className="text-xs sm:text-sm font-semibold tracking-tight text-neutral-400 mt-1">
-                RWF Per Day (Max Cap) · 300 RWF/hr
+
+              <div className="pt-6">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-neutral-200 text-[11px] font-bold text-neutral-700 shadow-2xs">
+                  Yes, we timed it. ✓
+                </span>
               </div>
             </div>
 
-            <Link
-              href="/login"
-              className="px-9 py-3.5 rounded-full bg-white text-neutral-900 hover:bg-neutral-100 text-sm font-bold tracking-tight transition-all shadow-md hover:scale-105 active:scale-95"
-            >
-              Sign up
-            </Link>
+            {/* Right Card: One plan, one price (Dark Ink) */}
+            <div className="p-8 sm:p-12 rounded-[36px] bg-[#121417] text-white border border-neutral-900 flex flex-col justify-between items-end text-right min-h-[380px] shadow-xl">
+              <div>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                  One plan, <br />
+                  one price.
+                </h3>
+              </div>
+
+              <div className="space-y-4 text-right">
+                <div>
+                  <div className="text-5xl sm:text-6xl font-black text-white tracking-tight leading-none">
+                    2,000
+                  </div>
+                  <div className="text-xs sm:text-sm font-semibold text-neutral-400 mt-1">
+                    RWF Per Day (Max Cap)
+                  </div>
+                </div>
+
+                <a
+                  href="#download"
+                  className="inline-block px-7 py-3 rounded-full bg-white text-neutral-900 hover:bg-neutral-100 text-xs font-bold tracking-tight transition-all shadow-md hover:scale-105 active:scale-95"
+                >
+                  Download App
+                </a>
+              </div>
+            </div>
+
+            {/* Overlapping Center Phone Mockup (Popcorn.space Image 3 exact clone) */}
+            <div className="hidden md:block pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[240px] select-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/screenshots/parking-spot-selection.png"
+                alt="ParkZone App Screen"
+                className="w-full h-auto drop-shadow-[0_25px_35px_rgba(0,0,0,0.3)]"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ────────────────── 11. GOT QUESTIONS? HERE'S THE ANSWERS (FAQS) ────────────────── */}
+      {/* ────────────────── 9. GOT QUESTIONS? HERE'S THE ANSWERS (FAQS) ────────────────── */}
       <section id="faq" className="py-24 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100">
         <div className="mb-14">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight leading-tight">
@@ -542,7 +616,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 12. DIRECT DISPATCH INQUIRY FORM ────────────────── */}
+      {/* ────────────────── 10. DIRECT DISPATCH INQUIRY FORM ────────────────── */}
       <section id="contact" className="py-20 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100">
         <div className="bg-[#FAFAFA] border border-neutral-200/80 rounded-[32px] p-8 sm:p-12">
           <div className="max-w-xl">
@@ -611,7 +685,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 13. MINIMALIST FOOTER (POPCORN STYLE) ────────────────── */}
+      {/* ────────────────── 11. MINIMALIST FOOTER (POPCORN STYLE - NO LOGIN/SIGNUP) ────────────────── */}
       <footer className="border-t border-neutral-200 py-12 px-6 sm:px-10 text-xs text-neutral-500 max-w-6xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
@@ -631,10 +705,10 @@ export default function LandingPage() {
           <div>
             <div className="font-bold text-neutral-900 mb-2">Platform</div>
             <ul className="space-y-1.5 text-[11px]">
-              <li><Link href="/login" className="hover:text-black">iOS Mobile App</Link></li>
-              <li><Link href="/login" className="hover:text-black">Android Mobile App</Link></li>
-              <li><Link href="/admin" className="hover:text-black">Admin Dispatch Portal</Link></li>
+              <li><a href="#download" className="hover:text-black">iOS Mobile App</a></li>
+              <li><a href="#download" className="hover:text-black">Android Mobile App</a></li>
               <li><a href="#pricing" className="hover:text-black">Statutory Tariffs</a></li>
+              <li><a href="#coverage" className="hover:text-black">Station Network</a></li>
             </ul>
           </div>
 
