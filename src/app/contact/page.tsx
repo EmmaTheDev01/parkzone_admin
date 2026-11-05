@@ -171,7 +171,7 @@ export default function ContactPage() {
           </div>
 
           <div className="flex items-center gap-4 text-[11px] text-neutral-400">
-            <span>© {new Date().getFullYear()} ParkZone Rwanda Ltd.</span>
+            <span>© 2026 ParkZone Rwanda Ltd.</span>
             <span>·</span>
             <span className="text-emerald-600 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

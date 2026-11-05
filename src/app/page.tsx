@@ -748,7 +748,7 @@ export default function LandingPage() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-neutral-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-neutral-400">
-          <div>© {new Date().getFullYear()} ParkZone Rwanda Ltd. All rights reserved.</div>
+          <div>© 2026 ParkZone Rwanda Ltd. All rights reserved.</div>
           <div className="flex items-center gap-4">
             <span>Kigali, Rwanda</span>
             <span>·</span>
