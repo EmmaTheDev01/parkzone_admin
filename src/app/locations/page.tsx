@@ -117,6 +117,7 @@ export default function LocationsPage() {
   const [bayPriceInput, setBayPriceInput] = useState<number | string>("");
   const [bayImageUrl, setBayImageUrl] = useState<string | null>(null);
   const [spaceViewMode, setSpaceViewMode] = useState<"table" | "grid">("table");
+  const [locationViewMode, setLocationViewMode] = useState<"table" | "split">("table");
 
   // Real-time indicator animation
   const [lastRealtimeEvent, setLastRealtimeEvent] = useState<string | null>(null);
@@ -558,6 +559,34 @@ export default function LocationsPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap shrink-0">
+            {/* View Mode Toggle: Facilities Table vs Split View */}
+            <div className="flex items-center p-0.5 rounded-xl bg-neutral-100 dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 shrink-0">
+              <button
+                type="button"
+                onClick={() => setLocationViewMode("table")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  locationViewMode === "table"
+                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs"
+                    : "text-neutral-500 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                <span>☰</span>
+                <span>Facilities Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocationViewMode("split")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  locationViewMode === "split"
+                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs"
+                    : "text-neutral-500 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                <span>⊞</span>
+                <span>Split View</span>
+              </button>
+            </div>
+
             {selectedLocation && (
               <>
                 <button
@@ -597,157 +626,356 @@ export default function LocationsPage() {
           </div>
         </div>
 
-        {/* 2-Column: Left Locations Selector, Right Full Interactive Bays Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Location Cards Column */}
-          <div className="lg:col-span-4 space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
-                Active Facilities ({locations.length})
-              </h3>
-              <span className="text-[11px] text-neutral-400">Select to load live bays</span>
+        {/* VIEW MODE: TABLE (Locations Table + Selected Facility Bays Table) */}
+        {locationViewMode === "table" && (
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] overflow-hidden shadow-xs">
+            <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
+                  All Registered Parking & Charging Facilities Directory
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Click any facility row to inspect its live parking and charging stalls below.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold px-3 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
+                  {locations.length} Facilities
+                </span>
+                <button
+                  onClick={() => setShowCreateLocationModal(true)}
+                  className="px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <PlusIcon size={12} />
+                  <span>Add Facility</span>
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {loading && locations.length === 0 ? (
-                <LocationListSkeleton count={3} />
-              ) : locations.length > 0 ? (
-                locations.map((loc) => {
-                  const isSelected = selectedLocation?.id === loc.id;
-                  const occPercent =
-                    loc.total_spots > 0
-                      ? Math.round(((loc.total_spots - loc.available_spots) / loc.total_spots) * 100)
-                      : 0;
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-neutral-600 dark:text-neutral-300">
+                <thead className="bg-[#f8f9fa] dark:bg-[#181d26] border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                  <tr>
+                    <th className="py-3 px-4 w-16">Facility</th>
+                    <th className="py-3 px-4">Name &amp; Address</th>
+                    <th className="py-3 px-4">Capabilities</th>
+                    <th className="py-3 px-4">Live Capacity</th>
+                    <th className="py-3 px-4">Tariffs</th>
+                    <th className="py-3 px-4">Operating Hours</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
+                  {loading && locations.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="p-0">
+                        <TableSkeleton rows={3} cols={8} />
+                      </td>
+                    </tr>
+                  ) : locations.length > 0 ? (
+                    locations.map((loc) => {
+                      const isSelected = selectedLocation?.id === loc.id;
+                      const occPercent =
+                        loc.total_spots > 0
+                          ? Math.round(((loc.total_spots - loc.available_spots) / loc.total_spots) * 100)
+                          : 0;
 
-                  return (
-                    <div
-                      key={loc.id}
-                      onClick={() => handleSelectLocation(loc)}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-                        isSelected
-                          ? "bg-white dark:bg-[#181d26] border-neutral-900 dark:border-neutral-300 shadow-md ring-1 ring-neutral-900/10 dark:ring-white/10"
-                          : "bg-white dark:bg-[#151921] border-[#e8ecf1] dark:border-[#202734] hover:border-neutral-400"
-                      }`}
-                    >
-                      {/* Facility Photo / Cover Preview */}
-                      {loc.image_url ? (
-                        <div className="relative w-full h-28 rounded-xl overflow-hidden mb-3 border border-neutral-200/60 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800">
-                          <img
-                            src={loc.image_url}
-                            alt={loc.name}
-                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                          <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs uppercase tracking-wider">
-                            {loc.layout_topology}
-                          </span>
-                          {loc.is_electric_station && (
-                            <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-sm flex items-center gap-1">
-                              <span>⚡ EV Fast</span>
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="w-full h-11 rounded-xl mb-3 bg-neutral-100 dark:bg-neutral-800/60 border border-dashed border-neutral-200 dark:border-neutral-700 flex items-center justify-between px-3 text-[11px] text-neutral-400">
-                          <span className="capitalize font-medium flex items-center gap-1.5">
-                            📐 {loc.layout_topology} Layout
-                          </span>
-                          {loc.is_electric_station && (
-                            <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
-                              ⚡ EV Station
-                            </span>
-                          )}
-                        </div>
-                      )}
+                      return (
+                        <tr
+                          key={loc.id}
+                          onClick={() => handleSelectLocation(loc)}
+                          className={`hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer ${
+                            isSelected ? "bg-neutral-100/90 dark:bg-neutral-800/70 font-semibold ring-1 ring-neutral-300 dark:ring-neutral-700" : ""
+                          }`}
+                        >
+                          {/* Image */}
+                          <td className="py-3 px-4">
+                            <div className="w-12 h-10 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shrink-0">
+                              {loc.image_url ? (
+                                <img src={loc.image_url} alt={loc.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs font-bold">
+                                  {loc.name.slice(0, 2).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                          </td>
 
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4
-                              className="font-bold text-sm text-neutral-900 dark:text-white truncate max-w-[190px]"
-                              title={loc.name}
-                            >
+                          {/* Name & Address */}
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-neutral-900 dark:text-white truncate max-w-[220px]" title={loc.name}>
                               {loc.name}
-                            </h4>
-                            {loc.is_electric_station && !loc.image_url && (
-                              <span className="w-2 h-2 rounded-full bg-blue-500" title="EV Charging Hub" />
-                            )}
-                          </div>
-                          <p
-                            className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate max-w-[210px]"
-                            title={loc.address}
-                          >
-                            {loc.address}
-                          </p>
-                          {(loc.opening_hours as any) && (
-                            <p className="text-[10px] text-neutral-400 mt-0.5">
-                              {(loc.opening_hours as any)?.["24_7"] ? "● Open 24/7" : `● ${(loc.opening_hours as any)?.open} - ${(loc.opening_hours as any)?.close}`}
-                            </p>
-                          )}
-                        </div>
+                            </div>
+                            <div className="text-[10px] text-neutral-400 truncate max-w-[220px]" title={loc.address}>
+                              {loc.address}, {loc.city}
+                            </div>
+                          </td>
 
-                        {!loc.image_url && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 uppercase tracking-wider shrink-0">
-                            {loc.layout_topology}
-                          </span>
-                        )}
-                      </div>
+                          {/* Capabilities */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {loc.is_electric_station && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                  ⚡ EV Station
+                                </span>
+                              )}
+                              {loc.is_handicap_facility && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                  ♿ Accessible
+                                </span>
+                              )}
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 capitalize">
+                                {loc.layout_topology || "Perpendicular"}
+                              </span>
+                            </div>
+                          </td>
 
-                      <div className="grid grid-cols-3 gap-2 my-3 text-xs">
-                        <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
-                          <span className="text-[10px] text-neutral-400 block font-medium">Bays</span>
-                          <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block">
-                            {loc.total_spots}
-                          </span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
-                          <span className="text-[10px] text-neutral-400 block font-medium">Available</span>
-                          <span className="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-                            {loc.available_spots}
-                          </span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
-                          <span className="text-[10px] text-neutral-400 block font-medium">Tariff</span>
-                          <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block">
-                            {formatCurrency(loc.hourly_rate)}/h
-                          </span>
-                        </div>
-                      </div>
+                          {/* Capacity */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-neutral-900 dark:text-white">
+                                {loc.available_spots} / {loc.total_spots} Free
+                              </span>
+                              <span className="text-[10px] text-neutral-400 font-semibold">
+                                ({occPercent}%)
+                              </span>
+                            </div>
+                            <div className="w-24 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden mt-1">
+                              <div
+                                style={{ width: `${Math.min(100, Math.max(0, occPercent))}%` }}
+                                className={`h-full rounded-full ${
+                                  occPercent > 80 ? "bg-red-500" : occPercent > 50 ? "bg-amber-500" : "bg-emerald-500"
+                                }`}
+                              />
+                            </div>
+                          </td>
 
-                      <div>
-                        <div className="flex justify-between text-[11px] mb-1 font-medium">
-                          <span className="text-neutral-400">Live Occupancy</span>
-                          <span className="text-neutral-700 dark:text-neutral-300 font-bold">
-                            {occPercent}%
-                          </span>
-                        </div>
-                        <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                          <div
-                            style={{ width: `${Math.min(100, Math.max(0, occPercent))}%` }}
-                            className={`h-full rounded-full transition-all ${
-                              occPercent > 80 ? "bg-red-500" : occPercent > 50 ? "bg-amber-500" : "bg-emerald-500"
-                            }`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="p-8 text-center bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734]">
-                  <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">
-                    No parking facilities in database.
-                  </p>
-                  <p className="text-[11px] text-neutral-400 mt-1">
-                    Click &ldquo;Add Facility&rdquo; above to register a hub.
-                  </p>
-                </div>
-              )}
+                          {/* Tariffs */}
+                          <td className="py-3 px-4 whitespace-nowrap font-medium text-neutral-900 dark:text-white">
+                            <div>{formatCurrency(loc.hourly_rate)}/hr</div>
+                            <div className="text-[10px] text-neutral-400 font-normal">
+                              Cap: {formatCurrency(loc.daily_rate)}/day
+                            </div>
+                          </td>
+
+                          {/* Hours */}
+                          <td className="py-3 px-4 whitespace-nowrap text-[11px] text-neutral-500 dark:text-neutral-400">
+                            {(loc as any).opening_time && (loc as any).closing_time
+                              ? `${(loc as any).opening_time.slice(0, 5)} - ${(loc as any).closing_time.slice(0, 5)}`
+                              : "24/7 Monitored"}
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                loc.status === "active" && loc.is_active !== false
+                                  ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  loc.status === "active" && loc.is_active !== false ? "bg-emerald-500" : "bg-neutral-400"
+                                }`}
+                              />
+                              {loc.status || "Active"}
+                            </span>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleSelectLocation(loc)}
+                                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-colors ${
+                                  isSelected
+                                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900"
+                                    : "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"
+                                }`}
+                              >
+                                {isSelected ? "Inspecting Bays" : "View Bays"}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedLocation(loc);
+                                  handleOpenEditLocation();
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white text-[10px] font-semibold"
+                              >
+                                Settings
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={8} className="py-12 text-center text-xs text-neutral-400">
+                        No facilities registered in database.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
-          {/* Right Column: Spaces Grid with Full Interactive Control */}
-          <div className="lg:col-span-8 bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] p-6 shadow-xs flex flex-col justify-between">
+        {/* 2-Column or Full Width Bay Control */}
+        <div className={locationViewMode === "split" ? "grid grid-cols-1 lg:grid-cols-12 gap-6" : "w-full"}>
+          {locationViewMode === "split" && (
+            <div className="lg:col-span-4 space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400">
+                  Active Facilities ({locations.length})
+                </h3>
+                <span className="text-[11px] text-neutral-400">Select to load live bays</span>
+              </div>
+
+              <div className="space-y-3">
+                {loading && locations.length === 0 ? (
+                  <LocationListSkeleton count={3} />
+                ) : locations.length > 0 ? (
+                  locations.map((loc) => {
+                    const isSelected = selectedLocation?.id === loc.id;
+                    const occPercent =
+                      loc.total_spots > 0
+                        ? Math.round(((loc.total_spots - loc.available_spots) / loc.total_spots) * 100)
+                        : 0;
+
+                    return (
+                      <div
+                        key={loc.id}
+                        onClick={() => handleSelectLocation(loc)}
+                        className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-white dark:bg-[#181d26] border-neutral-900 dark:border-neutral-300 shadow-md ring-1 ring-neutral-900/10 dark:ring-white/10"
+                            : "bg-white dark:bg-[#151921] border-[#e8ecf1] dark:border-[#202734] hover:border-neutral-400"
+                        }`}
+                      >
+                        {/* Facility Photo / Cover Preview */}
+                        {loc.image_url ? (
+                          <div className="relative w-full h-28 rounded-xl overflow-hidden mb-3 border border-neutral-200/60 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800">
+                            <img
+                              src={loc.image_url}
+                              alt={loc.name}
+                              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                            <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs uppercase tracking-wider">
+                              {loc.layout_topology}
+                            </span>
+                            {loc.is_electric_station && (
+                              <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-sm flex items-center gap-1">
+                                <span>⚡ EV Fast</span>
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-full h-11 rounded-xl mb-3 bg-neutral-100 dark:bg-neutral-800/60 border border-dashed border-neutral-200 dark:border-neutral-700 flex items-center justify-between px-3 text-[11px] text-neutral-400">
+                            <span className="capitalize font-medium flex items-center gap-1.5">
+                              📐 {loc.layout_topology} Layout
+                            </span>
+                            {loc.is_electric_station && (
+                              <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
+                                ⚡ EV Station
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4
+                                className="font-bold text-sm text-neutral-900 dark:text-white truncate max-w-[190px]"
+                                title={loc.name}
+                              >
+                                {loc.name}
+                              </h4>
+                              {loc.is_electric_station && !loc.image_url && (
+                                <span className="w-2 h-2 rounded-full bg-blue-500" title="EV Charging Hub" />
+                              )}
+                            </div>
+                            <p
+                              className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 truncate max-w-[210px]"
+                              title={loc.address}
+                            >
+                              {loc.address}
+                            </p>
+                            {(loc.opening_hours as any) && (
+                              <p className="text-[10px] text-neutral-400 mt-0.5">
+                                {(loc.opening_hours as any)?.["24_7"] ? "● Open 24/7" : `● ${(loc.opening_hours as any)?.open} - ${(loc.opening_hours as any)?.close}`}
+                              </p>
+                            )}
+                          </div>
+
+                          {!loc.image_url && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 uppercase tracking-wider shrink-0">
+                              {loc.layout_topology}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 my-3 text-xs">
+                          <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
+                            <span className="text-[10px] text-neutral-400 block font-medium">Bays</span>
+                            <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block">
+                              {loc.total_spots}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
+                            <span className="text-[10px] text-neutral-400 block font-medium">Available</span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
+                              {loc.available_spots}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
+                            <span className="text-[10px] text-neutral-400 block font-medium">Tariff</span>
+                            <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block">
+                              {formatCurrency(loc.hourly_rate)}/h
+                            </span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex justify-between text-[11px] mb-1 font-medium">
+                            <span className="text-neutral-400">Live Occupancy</span>
+                            <span className="text-neutral-700 dark:text-neutral-300 font-bold">
+                              {occPercent}%
+                            </span>
+                          </div>
+                          <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                            <div
+                              style={{ width: `${Math.min(100, Math.max(0, occPercent))}%` }}
+                              className={`h-full rounded-full transition-all ${
+                                occPercent > 80 ? "bg-red-500" : occPercent > 50 ? "bg-amber-500" : "bg-emerald-500"
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-8 text-center bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734]">
+                    <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">
+                      No parking facilities in database.
+                    </p>
+                    <p className="text-[11px] text-neutral-400 mt-1">
+                      Click &ldquo;Add Facility&rdquo; above to register a hub.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Spaces Section with Full Interactive Control */}
+          <div className={`${locationViewMode === "split" ? "lg:col-span-8" : "w-full"} bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] p-6 shadow-xs flex flex-col justify-between`}>
             <div>
               {/* Header Info Bar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-neutral-100 dark:border-neutral-800 gap-3">
@@ -1234,201 +1462,6 @@ export default function LocationsPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* ────────────────── COMPLETE ALL FACILITIES & CHARGING HUBS TABLE ────────────────── */}
-        <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] overflow-hidden shadow-xs">
-          <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
-                All Registered Parking & Charging Facilities Directory
-              </h3>
-              <p className="text-xs text-neutral-400 mt-0.5">
-                Bulk overview of municipal parking locations, EV infrastructure, tariffs, and live capacity.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold px-3 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
-                {locations.length} Facilities
-              </span>
-              <button
-                onClick={() => setShowCreateLocationModal(true)}
-                className="px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 flex items-center gap-1.5 whitespace-nowrap"
-              >
-                <PlusIcon size={12} />
-                <span>Add Facility</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-neutral-600 dark:text-neutral-300">
-              <thead className="bg-[#f8f9fa] dark:bg-[#181d26] border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
-                <tr>
-                  <th className="py-3 px-4 w-16">Facility</th>
-                  <th className="py-3 px-4">Name & Address</th>
-                  <th className="py-3 px-4">Capabilities</th>
-                  <th className="py-3 px-4">Live Capacity</th>
-                  <th className="py-3 px-4">Tariffs</th>
-                  <th className="py-3 px-4">Operating Hours</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
-                {loading && locations.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-0">
-                      <TableSkeleton rows={3} cols={8} />
-                    </td>
-                  </tr>
-                ) : locations.length > 0 ? (
-                  locations.map((loc) => {
-                    const isSelected = selectedLocation?.id === loc.id;
-                    const occPercent =
-                      loc.total_spots > 0
-                        ? Math.round(((loc.total_spots - loc.available_spots) / loc.total_spots) * 100)
-                        : 0;
-
-                    return (
-                      <tr
-                        key={loc.id}
-                        className={`hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors ${
-                          isSelected ? "bg-neutral-50/80 dark:bg-neutral-800/20" : ""
-                        }`}
-                      >
-                        {/* Image */}
-                        <td className="py-3 px-4">
-                          <div className="w-12 h-10 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shrink-0">
-                            {loc.image_url ? (
-                              <img src={loc.image_url} alt={loc.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs font-bold">
-                                {loc.name.slice(0, 2).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Name & Address */}
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-neutral-900 dark:text-white truncate max-w-[220px]" title={loc.name}>
-                            {loc.name}
-                          </div>
-                          <div className="text-[10px] text-neutral-400 truncate max-w-[220px]" title={loc.address}>
-                            {loc.address}, {loc.city}
-                          </div>
-                        </td>
-
-                        {/* Capabilities */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {loc.is_electric_station && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                                ⚡ EV Station
-                              </span>
-                            )}
-                            {loc.is_handicap_facility && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                ♿ Accessible
-                              </span>
-                            )}
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 capitalize">
-                              {loc.layout_topology || "Perpendicular"}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Capacity */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-neutral-900 dark:text-white">
-                              {loc.available_spots} / {loc.total_spots} Free
-                            </span>
-                            <span className="text-[10px] text-neutral-400 font-semibold">
-                              ({occPercent}%)
-                            </span>
-                          </div>
-                          <div className="w-24 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden mt-1">
-                            <div
-                              style={{ width: `${Math.min(100, Math.max(0, occPercent))}%` }}
-                              className={`h-full rounded-full ${
-                                occPercent > 80 ? "bg-red-500" : occPercent > 50 ? "bg-amber-500" : "bg-emerald-500"
-                              }`}
-                            />
-                          </div>
-                        </td>
-
-                        {/* Tariffs */}
-                        <td className="py-3 px-4 whitespace-nowrap font-medium text-neutral-900 dark:text-white">
-                          <div>{formatCurrency(loc.hourly_rate)}/hr</div>
-                          <div className="text-[10px] text-neutral-400 font-normal">
-                            Cap: {formatCurrency(loc.daily_rate)}/day
-                          </div>
-                        </td>
-
-                        {/* Hours */}
-                        <td className="py-3 px-4 whitespace-nowrap text-[11px] text-neutral-500 dark:text-neutral-400">
-                          {(loc as any).opening_time && (loc as any).closing_time
-                            ? `${(loc as any).opening_time.slice(0, 5)} - ${(loc as any).closing_time.slice(0, 5)}`
-                            : "24/7 Monitored"}
-                        </td>
-
-                        {/* Status */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                              loc.status === "active" && loc.is_active !== false
-                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
-                                : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
-                            }`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${
-                                loc.status === "active" && loc.is_active !== false ? "bg-emerald-500" : "bg-neutral-400"
-                              }`}
-                            />
-                            {loc.status || "Active"}
-                          </span>
-                        </td>
-
-                        {/* Actions */}
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              onClick={() => handleSelectLocation(loc)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-colors ${
-                                isSelected
-                                  ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900"
-                                  : "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"
-                              }`}
-                            >
-                              {isSelected ? "Inspecting Bays" : "View Bays"}
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedLocation(loc);
-                                handleOpenEditLocation();
-                              }}
-                              className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white text-[10px] font-semibold"
-                            >
-                              Settings
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={8} className="py-12 text-center text-xs text-neutral-400">
-                      No facilities registered in database.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
