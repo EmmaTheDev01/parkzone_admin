@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import AnimatedGlobe from "@/components/AnimatedGlobe";
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -297,26 +298,9 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Center Column: Dotted Radar Globe Illustration */}
+          {/* Center Column: 3D Animating Dotted Telemetry Globe */}
           <div className="lg:col-span-6 flex justify-center items-center order-1 lg:order-2">
-            <div className="relative w-64 h-64 sm:w-80 sm:h-80 rounded-full bg-gradient-to-b from-neutral-50 to-neutral-100/80 border border-neutral-200/70 shadow-inner flex items-center justify-center p-6">
-              {/* Concentric telemetry rings */}
-              <div className="absolute inset-4 rounded-full border border-dashed border-neutral-300 animate-[spin_60s_linear_infinite]" />
-              <div className="absolute inset-12 rounded-full border border-neutral-200" />
-              <div className="absolute inset-20 rounded-full border border-dashed border-emerald-300/80" />
-
-              {/* Center Kigali Municipal Hub Node */}
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-black text-white flex items-center justify-center shadow-lg">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/picon.png" alt="ParkZone" className="w-10 h-10 object-contain rounded-full" />
-                </div>
-                <div className="mt-3 px-3 py-1 rounded-full bg-white border border-neutral-200 text-[10px] font-bold text-neutral-800 shadow-2xs flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>Kigali Grid Live</span>
-                </div>
-              </div>
-            </div>
+            <AnimatedGlobe />
           </div>
 
           {/* Right Column (2 Callouts) */}
