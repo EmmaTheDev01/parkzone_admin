@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AdminShell } from "@/components/AdminShell";
-import { PlusIcon, TagsIcon, MoreCircleIcon } from "@/components/icons";
+import { PlusIcon, TagsIcon, MoreCircleIcon, TrashIcon } from "@/components/icons";
 import { ImageInputControl } from "@/components/ImageInputControl";
 import { parkingService, EVChargingPoint, EVChargingSession } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
@@ -13,6 +13,7 @@ export default function EVStationsPage() {
   const [chargers, setChargers] = useState<EVChargingPoint[]>([]);
   const [sessions, setSessions] = useState<EVChargingSession[]>([]);
   const [locationsList, setLocationsList] = useState<{ id: string; name: string }[]>([]);
+  const [chargerViewMode, setChargerViewMode] = useState<"table" | "cards">("table");
 
   // Modals
   const [showAddModal, setShowAddModal] = useState(false);
@@ -261,9 +262,208 @@ export default function EVStationsPage() {
           </div>
         </div>
 
-        {/* Station Cards Grid */}
+        {/* EV Hardware & Fast Chargers Section Header with Table / Cards View Toggle */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+          <div>
+            <h2 className="text-base font-extrabold text-neutral-900 dark:text-white">
+              EV Charging Points & Hardware Plugs ({chargers.length})
+            </h2>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Direct telemetry from chargers in Kigali mobility hubs with power delivery and tariff overrides.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* View Mode Toggle: Table or Cards */}
+            <div className="flex items-center p-0.5 rounded-xl bg-white dark:bg-[#151921] border border-neutral-200 dark:border-neutral-700 shrink-0 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setChargerViewMode("table")}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  chargerViewMode === "table"
+                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs"
+                    : "text-neutral-500 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                <span className="text-[11px]">☰</span>
+                <span>Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setChargerViewMode("cards")}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  chargerViewMode === "cards"
+                    ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs"
+                    : "text-neutral-500 hover:text-black dark:hover:text-white"
+                }`}
+              >
+                <span className="text-[11px]">⊞</span>
+                <span>Cards</span>
+              </button>
+            </div>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 flex items-center gap-1 whitespace-nowrap"
+            >
+              <PlusIcon size={12} />
+              <span>Add Charger</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Station Content: Table View or Cards Grid */}
         {loading ? (
-          <ChargerCardSkeleton count={3} />
+          chargerViewMode === "table" ? (
+            <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] overflow-hidden p-0">
+              <TableSkeleton rows={4} cols={9} />
+            </div>
+          ) : (
+            <ChargerCardSkeleton count={3} />
+          )
+        ) : chargerViewMode === "table" ? (
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] overflow-hidden shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-neutral-600 dark:text-neutral-300">
+                <thead className="bg-[#f8f9fa] dark:bg-[#181d26] border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                  <tr>
+                    <th className="py-3 px-4 w-16">Image</th>
+                    <th className="py-3 px-4">Station ID</th>
+                    <th className="py-3 px-4">Facility / Hub</th>
+                    <th className="py-3 px-4">Connector &amp; Specs</th>
+                    <th className="py-3 px-4">Max Output</th>
+                    <th className="py-3 px-4">Current Draw</th>
+                    <th className="py-3 px-4">Tariffs</th>
+                    <th className="py-3 px-4">Live Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
+                  {chargers.length > 0 ? (
+                    chargers.map((st) => {
+                      const isCharging = st.status === "charging";
+                      const isFaulted = st.status === "faulted" || st.operational_status === "faulted";
+                      const isOffline = st.status === "offline" || st.operational_status === "offline";
+                      const locName = locationsList.find((l) => l.id === st.location_id)?.name || "Kigali EV Hub";
+
+                      return (
+                        <tr
+                          key={st.id}
+                          onClick={() => handleOpenControl(st)}
+                          className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer"
+                        >
+                          {/* Image */}
+                          <td className="py-3 px-4">
+                            <div className="w-12 h-10 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shrink-0">
+                              {st.image_url ? (
+                                <img src={st.image_url} alt={st.station_identifier} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs font-bold">
+                                  ⚡
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Identifier */}
+                          <td className="py-3 px-4 font-mono font-bold text-neutral-900 dark:text-white whitespace-nowrap">
+                            {st.station_identifier}
+                          </td>
+
+                          {/* Location */}
+                          <td className="py-3 px-4">
+                            <span className="font-semibold text-neutral-800 dark:text-neutral-200 block truncate max-w-[180px]" title={locName}>
+                              {locName}
+                            </span>
+                          </td>
+
+                          {/* Connector */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span className="font-medium text-neutral-800 dark:text-neutral-200 block">
+                              {st.connector_type}
+                            </span>
+                            <span className="text-[10px] text-neutral-400">
+                              {st.voltage_volts || 400}V DC Fast
+                            </span>
+                          </td>
+
+                          {/* Max Output */}
+                          <td className="py-3 px-4 whitespace-nowrap font-bold text-neutral-900 dark:text-white">
+                            {st.max_output_kw} kW
+                          </td>
+
+                          {/* Current Draw */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            {isCharging ? (
+                              <span className="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                                {st.current_power_draw_kw || 42} kW
+                              </span>
+                            ) : (
+                              <span className="text-neutral-400">0 kW (Idle)</span>
+                            )}
+                          </td>
+
+                          {/* Tariffs */}
+                          <td className="py-3 px-4 whitespace-nowrap font-medium text-neutral-900 dark:text-white">
+                            <div>{formatCurrency(st.flat_rate_quick_rwf || 9000)} Quick</div>
+                            <div className="text-[10px] text-neutral-400 font-normal">
+                              {formatCurrency(st.flat_rate_full_rwf || 10000)} Full
+                            </div>
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span
+                              className={`text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border ${
+                                isCharging
+                                  ? "bg-blue-600 text-white border-blue-600"
+                                  : isFaulted
+                                  ? "bg-red-600 text-white border-red-600"
+                                  : isOffline
+                                  ? "bg-neutral-600 text-white border-neutral-600"
+                                  : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800"
+                              }`}
+                            >
+                              {isCharging && <span className="inline-block w-1.5 h-1.5 rounded-full bg-white mr-1.5 align-middle animate-pulse" />}
+                              {st.status}
+                            </span>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleOpenControl(st)}
+                                className="px-2.5 py-1 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[10px] font-semibold hover:opacity-90"
+                              >
+                                Control &amp; Edit
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm(`Are you sure you want to delete EV charger ${st.station_identifier}?`)) return;
+                                  await parkingService.deleteEVStation(st.id);
+                                  setChargers((prev) => prev.filter((c) => c.id !== st.id));
+                                }}
+                                title="Delete Charger"
+                                className="w-6 h-6 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center hover:bg-red-100"
+                              >
+                                <TrashIcon size={12} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={9} className="py-12 text-center text-xs text-neutral-400">
+                        No EV fast charging stations found in database.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {chargers.length > 0 ? (

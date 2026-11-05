@@ -97,6 +97,48 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// PATCH /api/parking/spaces (Update space)
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Missing space id" }, { status: 400 });
+    }
+
+    const hasServiceKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const client = hasServiceKey ? createAdminClient() : createClient();
+
+    const patchPayload: any = {
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updates.is_occupied !== undefined) {
+      patchPayload.is_occupied = Boolean(updates.is_occupied);
+      patchPayload.status = patchPayload.is_occupied ? "occupied" : "available";
+    }
+
+    const { data, error } = await (client as any)
+      .from("parking_spaces")
+      .update(patchPayload)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[API /parking/spaces PATCH] error:", error.message);
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, space: data });
+  } catch (err: any) {
+    console.error("[API /parking/spaces PATCH] exception:", err);
+    return NextResponse.json({ success: false, error: err?.message }, { status: 500 });
+  }
+}
+
 // DELETE /api/parking/spaces (Delete space)
 export async function DELETE(req: NextRequest) {
   try {
@@ -126,3 +168,4 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ success: false, error: err?.message }, { status: 500 });
   }
 }
+

@@ -2,6 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/client";
 
+function formatNameFromEmail(email: string): string {
+  const prefix = email.split("@")[0] || "";
+  if (prefix.toLowerCase().includes("emmanhabumugisha")) return "Emmanuel Habumugisha";
+  if (prefix.toLowerCase().includes("kaisalkaisy")) return "Kais Alkaisy";
+  if (prefix.toLowerCase().startsWith("alkaisy")) return "Alkaisy";
+  if (prefix.toLowerCase().startsWith("faris")) return "Faris";
+  if (prefix.toLowerCase().startsWith("kai")) return "Kai";
+
+  const words = prefix
+    .replace(/[._-]+/g, " ")
+    .replace(/([a-zA-Z])(\d+)/g, "$1")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+
+  return words.join(" ") || "Motorist";
+}
+
+function resolveUserName(
+  profileName?: string | null,
+  metaName?: string | null,
+  email?: string | null,
+  phone?: string | null
+): string {
+  if (profileName && profileName.trim() && profileName.trim().toLowerCase() !== "registered user") {
+    return profileName.trim();
+  }
+  if (metaName && metaName.trim() && metaName.trim().toLowerCase() !== "registered user") {
+    return metaName.trim();
+  }
+  if (email && email.includes("@")) {
+    return formatNameFromEmail(email);
+  }
+  if (phone && phone.trim()) {
+    return `Driver (${phone.trim()})`;
+  }
+  return "Registered Motorist";
+}
+
 export async function GET() {
   try {
     const unifiedUsersMap = new Map<string, any>();
@@ -22,11 +62,13 @@ export async function GET() {
         if (!authErr && authData?.users) {
           authUsersCount = authData.users.length;
           for (const u of authData.users) {
+            const rawName = (u.user_metadata as any)?.full_name || (u.user_metadata as any)?.name;
+            const resolved = resolveUserName(null, rawName, u.email, u.phone || (u.user_metadata as any)?.phone_number);
             unifiedUsersMap.set(u.id, {
               id: u.id,
               email: u.email || null,
               phone_number: u.phone || (u.user_metadata as any)?.phone_number || null,
-              full_name: (u.user_metadata as any)?.full_name || (u.user_metadata as any)?.name || "Registered User",
+              full_name: resolved,
               avatar_url: (u.user_metadata as any)?.avatar_url || null,
               role: (u.user_metadata as any)?.role || "driver",
               wallet_balance_rwf: 0,
@@ -54,11 +96,14 @@ export async function GET() {
         rpcAvailable = true;
         for (const r of rpcData as any[]) {
           const existing = unifiedUsersMap.get(r.id);
+          const emailVal = r.email || existing?.email || null;
+          const phoneVal = r.phone_number || existing?.phone_number || null;
+          const resolved = resolveUserName(r.full_name, existing?.full_name, emailVal, phoneVal);
           unifiedUsersMap.set(r.id, {
             id: r.id,
-            email: r.email || existing?.email || null,
-            phone_number: r.phone_number || existing?.phone_number || null,
-            full_name: r.full_name || existing?.full_name || "Registered User",
+            email: emailVal,
+            phone_number: phoneVal,
+            full_name: resolved,
             avatar_url: r.avatar_url || existing?.avatar_url || null,
             role: r.role || existing?.role || "driver",
             wallet_balance_rwf: Number(r.wallet_balance_rwf ?? existing?.wallet_balance_rwf ?? 0),
@@ -86,11 +131,14 @@ export async function GET() {
         profilesCount = profiles.length;
         for (const p of profiles) {
           const existing = unifiedUsersMap.get(p.id);
+          const emailVal = p.email || existing?.email || null;
+          const phoneVal = p.phone_number || existing?.phone_number || null;
+          const resolved = resolveUserName(p.full_name, existing?.full_name, emailVal, phoneVal);
           unifiedUsersMap.set(p.id, {
             id: p.id,
-            email: p.email || existing?.email || null,
-            phone_number: p.phone_number || existing?.phone_number || null,
-            full_name: p.full_name || existing?.full_name || "Registered User",
+            email: emailVal,
+            phone_number: phoneVal,
+            full_name: resolved,
             avatar_url: p.avatar_url || existing?.avatar_url || null,
             role: p.role || existing?.role || "driver",
             wallet_balance_rwf: Number(p.wallet_balance_rwf ?? existing?.wallet_balance_rwf ?? 0),

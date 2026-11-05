@@ -109,6 +109,7 @@ export default function UsersPage() {
   // Modals
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
+  const [editFullName, setEditFullName] = useState("");
   const [editRole, setEditRole] = useState<UserRole>("driver");
   const [editIsActive, setEditIsActive] = useState(true);
   const [editWalletRwf, setEditWalletRwf] = useState(0);
@@ -166,6 +167,7 @@ export default function UsersPage() {
 
   const handleOpenEditUser = (user: Profile) => {
     setSelectedUser(user);
+    setEditFullName(user.full_name || "");
     setEditRole(user.role);
     setEditIsActive(user.is_active);
     setEditWalletRwf(user.wallet_balance_rwf || 0);
@@ -178,6 +180,7 @@ export default function UsersPage() {
     if (!selectedUser) return;
     try {
       await parkingService.updateUserProfile(selectedUser.id, {
+        full_name: editFullName.trim(),
         role: editRole,
         is_active: editIsActive,
         wallet_balance_rwf: Number(editWalletRwf),
@@ -189,6 +192,7 @@ export default function UsersPage() {
           u.id === selectedUser.id
             ? {
                 ...u,
+                full_name: editFullName.trim(),
                 role: editRole,
                 is_active: editIsActive,
                 wallet_balance_rwf: Number(editWalletRwf),
@@ -413,7 +417,7 @@ export default function UsersPage() {
                               )}
                             </div>
                             <div>
-                              <div className="font-semibold text-neutral-900 dark:text-white truncate max-w-[170px] flex items-center gap-1.5">
+                              <div className="font-semibold text-neutral-900 dark:text-white flex items-center gap-1.5 whitespace-nowrap">
                                 <span>{displayName}</span>
                                 {u.source && (
                                   <span
@@ -429,7 +433,7 @@ export default function UsersPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[10px] text-neutral-400 font-mono truncate max-w-[170px]">
+                              <div className="text-[10px] text-neutral-400 font-mono truncate max-w-[200px]" title={u.id}>
                                 {u.id}
                               </div>
                             </div>
@@ -684,6 +688,17 @@ export default function UsersPage() {
                   },
                 ]}
               />
+
+              <div>
+                <label className="block font-semibold mb-1">User Full Name</label>
+                <input
+                  type="text"
+                  value={editFullName}
+                  onChange={(e) => setEditFullName(e.target.value)}
+                  placeholder="e.g. Kais Alkaisy"
+                  className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none font-semibold text-neutral-900 dark:text-white"
+                />
+              </div>
 
               <div>
                 <label className="block font-semibold mb-1">System Role Authorization</label>

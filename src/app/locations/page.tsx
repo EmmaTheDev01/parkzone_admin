@@ -14,7 +14,7 @@ import {
 import { parkingService, ParkingLocation, ParkingSpace } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
 import { ImageInputControl } from "@/components/ImageInputControl";
-import { LocationListSkeleton, BayGridSkeleton } from "@/components/Skeletons";
+import { LocationListSkeleton, BayGridSkeleton, TableSkeleton } from "@/components/Skeletons";
 
 const ZONES = ["All Zones", "Zone A", "Zone B", "Zone C", "Zone D", "Zone E"] as const;
 
@@ -116,6 +116,7 @@ export default function LocationsPage() {
   const [bayZoneInput, setBayZoneInput] = useState("Zone A");
   const [bayPriceInput, setBayPriceInput] = useState<number | string>("");
   const [bayImageUrl, setBayImageUrl] = useState<string | null>(null);
+  const [spaceViewMode, setSpaceViewMode] = useState<"table" | "grid">("table");
 
   // Real-time indicator animation
   const [lastRealtimeEvent, setLastRealtimeEvent] = useState<string | null>(null);
@@ -926,6 +927,34 @@ export default function LocationsPage() {
                       <option value="ev">EV Fast Charging</option>
                       <option value="handicap">Accessible</option>
                     </select>
+
+                    {/* View Mode Toggle: Table or Grid */}
+                    <div className="flex items-center p-0.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setSpaceViewMode("table")}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${
+                          spaceViewMode === "table"
+                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs"
+                            : "text-neutral-500 hover:text-black dark:hover:text-white"
+                        }`}
+                      >
+                        <span className="text-[11px]">☰</span>
+                        <span>Table</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpaceViewMode("grid")}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 ${
+                          spaceViewMode === "grid"
+                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-2xs"
+                            : "text-neutral-500 hover:text-black dark:hover:text-white"
+                        }`}
+                      >
+                        <span className="text-[11px]">⊞</span>
+                        <span>Grid</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Search Input */}
@@ -942,9 +971,159 @@ export default function LocationsPage() {
                 </div>
               </div>
 
-              {/* Spaces Grid (Interactive Top-Down Visual Bay Rendering) */}
+              {/* Spaces View: Table or Visual Grid */}
               {loading ? (
-                <BayGridSkeleton count={8} />
+                spaceViewMode === "table" ? (
+                  <TableSkeleton rows={6} cols={7} />
+                ) : (
+                  <BayGridSkeleton count={8} />
+                )
+              ) : spaceViewMode === "table" ? (
+                <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800 pt-1">
+                  <table className="w-full text-left text-xs text-neutral-600 dark:text-neutral-300">
+                    <thead className="bg-[#f8f9fa] dark:bg-[#181d26] border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                      <tr>
+                        <th className="py-3 px-4 w-14">Image</th>
+                        <th className="py-3 px-4">Lot # & Zone</th>
+                        <th className="py-3 px-4">Space Type</th>
+                        <th className="py-3 px-4">Live Status</th>
+                        <th className="py-3 px-4">Hourly Tariff</th>
+                        <th className="py-3 px-4">QR / Plate</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
+                      {filteredSpaces.length > 0 ? (
+                        filteredSpaces.map((space) => {
+                          const isOccupied = space.is_occupied;
+                          const isEv = space.space_type === "ev";
+                          const isHandicap = space.space_type === "handicap";
+                          return (
+                            <tr
+                              key={space.id}
+                              onClick={() => handleOpenBayControl(space)}
+                              className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors cursor-pointer"
+                            >
+                              {/* Image */}
+                              <td className="py-2.5 px-4">
+                                <div className="w-10 h-10 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shrink-0">
+                                  {space.image_url ? (
+                                    <img
+                                      src={space.image_url}
+                                      alt={space.space_number}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-neutral-400 font-black text-[10px]">
+                                      {space.space_number.slice(0, 3)}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Space Number & Zone */}
+                              <td className="py-2.5 px-4 font-mono font-bold text-neutral-900 dark:text-white whitespace-nowrap">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-sm">{space.space_number}</span>
+                                  <span className="text-[10px] px-1.5 py-0.2 rounded font-sans font-semibold bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700">
+                                    {space.zone_code || "Zone A"}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-neutral-400 font-normal font-sans">
+                                  Floor {(space as any).floor || "1"}
+                                </span>
+                              </td>
+
+                              {/* Type */}
+                              <td className="py-2.5 px-4 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                    isEv
+                                      ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                      : isHandicap
+                                      ? "bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                                      : "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700"
+                                  }`}
+                                >
+                                  {isEv ? "⚡ EV Charger" : isHandicap ? "♿ Accessible" : "🚗 Regular"}
+                                </span>
+                              </td>
+
+                              {/* Status & Plate */}
+                              <td className="py-2.5 px-4 whitespace-nowrap">
+                                {isOccupied ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+                                      Occupied
+                                    </span>
+                                    {space.current_vehicle_plate && (
+                                      <span className="font-mono font-bold text-[11px] px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white">
+                                        {space.current_vehicle_plate}
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    Available
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Tariff */}
+                              <td className="py-2.5 px-4 whitespace-nowrap font-medium text-neutral-900 dark:text-white">
+                                {formatCurrency(space.price_per_hour_rwf || selectedLocation?.hourly_rate || 300)}/hr
+                              </td>
+
+                              {/* QR Code Token */}
+                              <td className="py-2.5 px-4 whitespace-nowrap">
+                                <span className="font-mono text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded truncate max-w-[140px] block" title={space.qr_code_token || ""}>
+                                  {space.qr_code_token ? space.qr_code_token.slice(0, 16) + "..." : "—"}
+                                </span>
+                              </td>
+
+                              {/* Actions */}
+                              <td className="py-2.5 px-4 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <button
+                                    onClick={() => handleQuickToggleOccupancy(space)}
+                                    className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-colors ${
+                                      isOccupied
+                                        ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"
+                                        : "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                                    }`}
+                                  >
+                                    {isOccupied ? "Free Bay" : "Occupy"}
+                                  </button>
+                                  <button
+                                    onClick={() => handleOpenBayControl(space)}
+                                    className="px-2.5 py-1 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[10px] font-semibold hover:opacity-90"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleQuickDeleteBay(space, e)}
+                                    title="Delete Bay"
+                                    className="w-6 h-6 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center hover:bg-red-100"
+                                  >
+                                    <TrashIcon size={12} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan={7} className="py-12 text-center text-xs text-neutral-400">
+                            No parking stalls found matching filter criteria.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               ) : filteredSpaces.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-4">
                   {filteredSpaces.map((space) => {
@@ -1055,6 +1234,201 @@ export default function LocationsPage() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* ────────────────── COMPLETE ALL FACILITIES & CHARGING HUBS TABLE ────────────────── */}
+        <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] overflow-hidden shadow-xs">
+          <div className="p-5 border-b border-neutral-100 dark:border-neutral-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
+                All Registered Parking & Charging Facilities Directory
+              </h3>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                Bulk overview of municipal parking locations, EV infrastructure, tariffs, and live capacity.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold px-3 py-1 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
+                {locations.length} Facilities
+              </span>
+              <button
+                onClick={() => setShowCreateLocationModal(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-xs font-semibold hover:opacity-90 flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <PlusIcon size={12} />
+                <span>Add Facility</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-neutral-600 dark:text-neutral-300">
+              <thead className="bg-[#f8f9fa] dark:bg-[#181d26] border-b border-neutral-200/80 dark:border-neutral-800 text-[10px] uppercase font-bold text-neutral-400 tracking-wider">
+                <tr>
+                  <th className="py-3 px-4 w-16">Facility</th>
+                  <th className="py-3 px-4">Name & Address</th>
+                  <th className="py-3 px-4">Capabilities</th>
+                  <th className="py-3 px-4">Live Capacity</th>
+                  <th className="py-3 px-4">Tariffs</th>
+                  <th className="py-3 px-4">Operating Hours</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
+                {loading && locations.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-0">
+                      <TableSkeleton rows={3} cols={8} />
+                    </td>
+                  </tr>
+                ) : locations.length > 0 ? (
+                  locations.map((loc) => {
+                    const isSelected = selectedLocation?.id === loc.id;
+                    const occPercent =
+                      loc.total_spots > 0
+                        ? Math.round(((loc.total_spots - loc.available_spots) / loc.total_spots) * 100)
+                        : 0;
+
+                    return (
+                      <tr
+                        key={loc.id}
+                        className={`hover:bg-neutral-50/60 dark:hover:bg-neutral-800/40 transition-colors ${
+                          isSelected ? "bg-neutral-50/80 dark:bg-neutral-800/20" : ""
+                        }`}
+                      >
+                        {/* Image */}
+                        <td className="py-3 px-4">
+                          <div className="w-12 h-10 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800 shrink-0">
+                            {loc.image_url ? (
+                              <img src={loc.image_url} alt={loc.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs font-bold">
+                                {loc.name.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Name & Address */}
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-neutral-900 dark:text-white truncate max-w-[220px]" title={loc.name}>
+                            {loc.name}
+                          </div>
+                          <div className="text-[10px] text-neutral-400 truncate max-w-[220px]" title={loc.address}>
+                            {loc.address}, {loc.city}
+                          </div>
+                        </td>
+
+                        {/* Capabilities */}
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {loc.is_electric_station && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                ⚡ EV Station
+                              </span>
+                            )}
+                            {loc.is_handicap_facility && (
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                ♿ Accessible
+                              </span>
+                            )}
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 capitalize">
+                              {loc.layout_topology || "Perpendicular"}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Capacity */}
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-neutral-900 dark:text-white">
+                              {loc.available_spots} / {loc.total_spots} Free
+                            </span>
+                            <span className="text-[10px] text-neutral-400 font-semibold">
+                              ({occPercent}%)
+                            </span>
+                          </div>
+                          <div className="w-24 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden mt-1">
+                            <div
+                              style={{ width: `${Math.min(100, Math.max(0, occPercent))}%` }}
+                              className={`h-full rounded-full ${
+                                occPercent > 80 ? "bg-red-500" : occPercent > 50 ? "bg-amber-500" : "bg-emerald-500"
+                              }`}
+                            />
+                          </div>
+                        </td>
+
+                        {/* Tariffs */}
+                        <td className="py-3 px-4 whitespace-nowrap font-medium text-neutral-900 dark:text-white">
+                          <div>{formatCurrency(loc.hourly_rate)}/hr</div>
+                          <div className="text-[10px] text-neutral-400 font-normal">
+                            Cap: {formatCurrency(loc.daily_rate)}/day
+                          </div>
+                        </td>
+
+                        {/* Hours */}
+                        <td className="py-3 px-4 whitespace-nowrap text-[11px] text-neutral-500 dark:text-neutral-400">
+                          {(loc as any).opening_time && (loc as any).closing_time
+                            ? `${(loc as any).opening_time.slice(0, 5)} - ${(loc as any).closing_time.slice(0, 5)}`
+                            : "24/7 Monitored"}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              loc.status === "active" && loc.is_active !== false
+                                ? "bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                                : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                loc.status === "active" && loc.is_active !== false ? "bg-emerald-500" : "bg-neutral-400"
+                              }`}
+                            />
+                            {loc.status || "Active"}
+                          </span>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleSelectLocation(loc)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition-colors ${
+                                isSelected
+                                  ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900"
+                                  : "bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 hover:border-neutral-400"
+                              }`}
+                            >
+                              {isSelected ? "Inspecting Bays" : "View Bays"}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedLocation(loc);
+                                handleOpenEditLocation();
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:text-black dark:hover:text-white text-[10px] font-semibold"
+                            >
+                              Settings
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-xs text-neutral-400">
+                      No facilities registered in database.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

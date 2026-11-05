@@ -343,9 +343,13 @@ export default function VehiclesPage() {
                         </td>
 
                         {/* Owner Profile */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="font-semibold text-neutral-800 dark:text-neutral-200">
-                            {v.profiles?.full_name || "Registered Driver"}
+                            {v.profiles?.full_name && v.profiles.full_name.trim() !== "" && v.profiles.full_name !== "Registered Driver"
+                              ? v.profiles.full_name
+                              : v.profiles?.email
+                              ? v.profiles.email.split("@")[0].charAt(0).toUpperCase() + v.profiles.email.split("@")[0].slice(1)
+                              : "Registered Driver"}
                           </div>
                           <div className="text-[10px] text-neutral-400">
                             {v.profiles?.email || v.profiles?.phone_number || "Verified Account"}

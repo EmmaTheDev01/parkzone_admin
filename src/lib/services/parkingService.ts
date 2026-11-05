@@ -235,9 +235,9 @@ export const parkingService = {
   // ── LOCATIONS ──
   async getLocations(): Promise<ParkingLocation[]> {
     const supabase = createClient();
-    const [{ data: locations, error: locErr }, { data: spaces, error: spErr }] = await Promise.all([
+    const [{ data: locations, error: locErr }, allSpaces] = await Promise.all([
       supabase.from("parking_locations").select("*").order("created_at", { ascending: false }),
-      supabase.from("parking_spaces").select("*"),
+      this.getSpaces(),
     ]);
 
     if (locErr) {
@@ -247,9 +247,8 @@ export const parkingService = {
       return [];
     }
 
-    const allSpaces = spaces || [];
     return (locations || []).map((loc: any) => {
-      const locSpaces = allSpaces.filter((s: any) => s.location_id === loc.id);
+      const locSpaces = (allSpaces || []).filter((s: any) => s.location_id === loc.id);
       return this.normalizeLocation(loc, locSpaces);
     });
   },
@@ -536,6 +535,29 @@ export const parkingService = {
     spaceId: string,
     updates: Database["public"]["Tables"]["parking_spaces"]["Update"]
   ): Promise<ParkingSpace | null> {
+    // 1. In browser, route through Admin API to bypass RLS
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch("/api/parking/spaces", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: spaceId, ...updates }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.success && json.space) {
+            if (json.space.location_id) {
+              await this.syncLocationSpotCounts(json.space.location_id).catch(() => {});
+            }
+            return this.normalizeSpace(json.space);
+          }
+        }
+      } catch (apiErr) {
+        console.warn("[parkingService] Admin API updateSpace warning:", apiErr);
+      }
+    }
+
+    // 2. Direct client fallback
     const supabase = createClient();
     let res = await supabase
       .from("parking_spaces")
@@ -592,9 +614,38 @@ export const parkingService = {
     isOccupied: boolean,
     vehiclePlate?: string | null
   ): Promise<ParkingSpace | null> {
-    const supabase = createClient();
     const newStatus = isOccupied ? "occupied" : "available";
     const now = new Date().toISOString();
+
+    // 1. In browser, route through Admin API to bypass RLS
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch("/api/parking/spaces", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: spaceId,
+            is_occupied: isOccupied,
+            status: newStatus,
+            current_vehicle_plate: isOccupied ? (vehiclePlate || "RAD 001 A") : null,
+            occupied_at: isOccupied ? now : null,
+          }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.success && json.space) {
+            if (json.space.location_id) {
+              await this.syncLocationSpotCounts(json.space.location_id).catch(() => {});
+            }
+            return this.normalizeSpace(json.space);
+          }
+        }
+      } catch (apiErr) {
+        console.warn("[parkingService] Admin API toggleSpaceOccupancy warning:", apiErr);
+      }
+    }
+
+    const supabase = createClient();
 
     let res = await supabase
       .from("parking_spaces")
@@ -672,17 +723,14 @@ export const parkingService = {
   },
 
   async syncLocationSpotCounts(locationId: string): Promise<void> {
-    const supabase = createClient();
-    const { data: spaces } = await supabase
-      .from("parking_spaces")
-      .select("*")
-      .eq("location_id", locationId);
+    const spaces = await this.getSpaces(locationId);
 
     if (spaces) {
       const total = spaces.length;
       const occupied = spaces.filter((s: any) => s.is_occupied === true || s.status === "occupied").length;
       const available = Math.max(0, total - occupied);
 
+      const supabase = createClient();
       const { error } = await supabase
         .from("parking_locations")
         .update({
@@ -712,11 +760,7 @@ export const parkingService = {
     }
 
     // Derive EV stations from parking_spaces in database where space_type == 'ev'
-    const { data: evSpaces } = await supabase
-      .from("parking_spaces")
-      .select("*, parking_locations:location_id(name, address, city)")
-      .eq("space_type", "ev")
-      .order("space_number", { ascending: true });
+    const evSpaces = (await this.getSpaces()).filter((s) => s.space_type === "ev");
 
     if (evSpaces && evSpaces.length > 0) {
       return (evSpaces.map((s: any) => {
@@ -847,11 +891,8 @@ export const parkingService = {
     }
 
     // Check if any EV space is currently occupied in parking_spaces
-    const { data: occupiedEv } = await supabase
-      .from("parking_spaces")
-      .select("*, parking_locations:location_id(name)")
-      .eq("space_type", "ev")
-      .or("status.eq.occupied,is_occupied.eq.true");
+    const allSpaces = await this.getSpaces();
+    const occupiedEv = allSpaces.filter((s) => s.space_type === "ev" && (s.is_occupied || (s as any).status === "occupied"));
 
     if (occupiedEv && occupiedEv.length > 0) {
       return (occupiedEv.map((s: any) => ({
@@ -1668,13 +1709,11 @@ export const parkingService = {
     }
 
     // 2. Derive active in-facility tickets from occupied spaces in parking_spaces
-    const { data: spaces } = await supabase
-      .from("parking_spaces")
-      .select("*, parking_locations:location_id(name)")
-      .or("status.eq.occupied,is_occupied.eq.true");
+    const allSpaces = await this.getSpaces();
+    const occupiedSpaces = allSpaces.filter((s: any) => s.status === "occupied" || s.is_occupied === true);
 
-    if (spaces && spaces.length > 0) {
-      return spaces.map((s: any) => ({
+    if (occupiedSpaces && occupiedSpaces.length > 0) {
+      return occupiedSpaces.map((s: any) => ({
         id: `tkt-${s.id}`,
         ticket_number: `TKT-${s.space_number || s.id.slice(0, 4).toUpperCase()}`,
         space_id: s.id,
@@ -1691,7 +1730,6 @@ export const parkingService = {
         status: "active",
         created_at: s.updated_at || new Date().toISOString(),
         updated_at: s.updated_at || new Date().toISOString(),
-        parking_locations: s.parking_locations,
       })) as any;
     }
 

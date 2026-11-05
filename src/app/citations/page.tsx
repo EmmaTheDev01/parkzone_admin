@@ -253,7 +253,7 @@ export default function CitationsPage() {
 
                     return (
                       <tr key={c.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors">
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <div className="font-mono font-bold text-neutral-900 dark:text-white">
                             {c.fine_number}
                           </div>
@@ -261,7 +261,7 @@ export default function CitationsPage() {
                             {c.irembo_reference_code || "IREMBO-RW-PENDING"}
                           </div>
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <span className="font-mono font-black px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white">
                             {c.vehicle_plate}
                           </span>
@@ -272,10 +272,10 @@ export default function CitationsPage() {
                         <td className="py-3.5 px-4 text-neutral-600 dark:text-neutral-300 max-w-[200px] truncate" title={c.reason}>
                           {c.reason}
                         </td>
-                        <td className="py-3.5 px-4 font-extrabold text-neutral-900 dark:text-white">
+                        <td className="py-3.5 px-4 font-extrabold text-neutral-900 dark:text-white whitespace-nowrap">
                           {formatCurrency(c.fine_amount)}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                               isPaid
@@ -288,7 +288,7 @@ export default function CitationsPage() {
                             {c.payment_status}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-neutral-500 text-[11px]">
+                        <td className="py-3.5 px-4 text-neutral-500 text-[11px] whitespace-nowrap">
                           {c.issued_at
                             ? new Date(c.issued_at).toLocaleDateString("en-RW", {
                                 month: "short",
