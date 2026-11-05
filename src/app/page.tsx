@@ -3,49 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
-// 14-Point Starburst Geometric SVG matching the Dribbble design
-function StarburstGraphic({ className = "w-28 h-28 text-current" }: { className?: string }) {
-  const starPoints =
-    "100.00,0.00 108.46,62.95 143.39,9.90 123.69,70.29 178.18,37.65 134.24,83.51 197.49,77.75 138.00,100.00 197.49,122.25 134.24,116.49 178.18,162.35 123.69,129.71 143.39,190.10 108.46,137.05 100.00,200.00 91.54,137.05 56.61,190.10 76.31,129.71 21.82,162.35 65.76,116.49 2.51,122.25 62.00,100.00 2.51,77.75 65.76,83.51 21.82,37.65 76.31,70.29 56.61,9.90 91.54,62.95";
-
-  return (
-    <svg
-      viewBox="0 0 200 200"
-      fill="currentColor"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <polygon points={starPoints} />
-    </svg>
-  );
-}
-
 export default function LandingPage() {
   const [selectedHeroScreen, setSelectedHeroScreen] = useState(0);
-  const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [copiedItem, setCopiedItem] = useState<string | null>(null);
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", contact: "", message: "" });
-
-  // Ensure landing page is strictly dark mode (admin theme preference is preserved for admin dashboard)
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const html = document.documentElement;
-    const savedAdminTheme = localStorage.getItem("parkzone_theme") || "dark";
-
-    // Strictly enforce dark mode on public landing page
-    html.classList.add("dark");
-
-    return () => {
-      // When leaving landing page (e.g. entering /admin), restore admin's theme preference
-      if (savedAdminTheme === "light") {
-        html.classList.remove("dark");
-      } else {
-        html.classList.add("dark");
-      }
-    };
-  }, []);
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard?.writeText(text);
@@ -111,897 +74,860 @@ export default function LandingPage() {
     },
   ];
 
-  const features = [
+  const faqs = [
     {
-      id: "telemetry",
-      title: "Real-time Bay Telemetry & Sensors",
-      description:
-        "Work together seamlessly with smart city infrastructure. Our IoT ultrasonic and camera network accurately detects vacancy and guides drivers straight to open spots across Kigali.",
-      badge: "Kigali Convention · 3 of 3 Bays Open",
-      subtext: "Ultrasonic sensor active · 99.4% precision",
-      action: "Select Bay",
-      screenshot: "/screenshots/kigali-convention-park.png",
+      q: "How does the 15-minute free grace period work?",
+      a: "Every municipal parking hub and smart street zone in Kigali grants a mandatory 15-minute grace period. If you drop off a passenger, pick up an order, or exit within 15 minutes, the ANPR camera gate verifies your stay and your ticket balance remains exactly 0 RWF.",
     },
     {
-      id: "commuter-cap",
-      title: "Automated Commuter Cap (2,000 RWF)",
-      description:
-        "Never fear runaway parking tickets or inflated bills. In full compliance with Rwanda municipal tariff regulations, daily parking fees are automatically capped at 2,000 RWF.",
-      badge: "Spot H-01 · 90° Perpendicular Grid",
-      subtext: "Automatic daily ceiling · Zero manual activation required",
-      action: "Reserve Spot",
-      screenshot: "/screenshots/parking-spot-selection.png",
+      q: "How does the 2,000 RWF daily commuter cap protect drivers?",
+      a: "Under City of Kigali mobility statutory regulations, all transient parking fees accumulate at 300 RWF per hour but automatically freeze the moment your total reaches 2,000 RWF. You enjoy unlimited city re-entries, full overnight parking protection, and zero surprise fines.",
     },
     {
-      id: "ev-charging",
-      title: "Rapid EV Fast-Charging Stations",
-      description:
-        "Locate high-speed CCS2 and Type 2 charging ports in Kigali CBD and surrounding hubs. View live kilowatts delivered, state-of-charge percentage, and billing telemetry in real-time.",
-      badge: "Nyarutarama EV Charging · 60kW Rapid DC",
-      subtext: "11.3 km route · Charge Rate 250 RWF/kWh",
-      action: "Navigate Station",
-      screenshot: "/screenshots/ev-map-navigation.png",
+      q: "Can I charge my electric vehicle without paying parking fees?",
+      a: "Yes. All designated EV fast-charging stations (such as Nyarutarama EV Hub) waive parking tariffs entirely during active charging sessions. Motorists pay only the statutory electricity rate (250 RWF/kWh or 9k/10k flat quick-charge), with 0 RWF charged for parking.",
     },
     {
-      id: "vehicle-telemetry",
-      title: "3D Vehicle Telemetry & Zero Arrears",
-      description:
-        "Register your vehicle plate with blind hash privacy enforcement. Track battery state of charge, exterior color specs, and verify zero parking arrears instantly.",
-      badge: "Vehicle RAJ 778 Z · 100% Battery",
-      subtext: "RURA & City of Kigali parking verification compliant",
-      action: "Manage Fleet",
-      screenshot: "/screenshots/vehicle-telemetry.png",
+      q: "How do MTN MoMo and Airtel Money checkouts work?",
+      a: "When you scan your parking bay QR code or enter your license plate in the app, you receive an automated USSD push prompt directly on your phone. Simply enter your mobile money PIN to complete payment with instant digital receipts recorded.",
+    },
+    {
+      q: "How do I check or dispute a parking citation?",
+      a: "Enter your vehicle plate in the ParkZone mobile app or web portal to view your real-time standing. Any statutory fine logged by marshals is linked directly to Irembo, where you can inspect timestamps, photos, and resolve arrears instantly.",
     },
   ];
 
-  const handleNextFeature = () => {
-    setActiveFeatureIndex((prev) => (prev + 1) % features.length);
-  };
-
-  const handlePrevFeature = () => {
-    setActiveFeatureIndex((prev) => (prev - 1 + features.length) % features.length);
-  };
-
-
-  const faqs = [
+  const testimonials = [
     {
-      q: "How does the 2,000 RWF daily commuter cap work?",
-      a: "The ParkZone municipal pricing engine charges a standard 300 RWF per hour. Once your cumulative daily session reaches 2,000 RWF (at approximately 6.6 hours), the system automatically locks the tariff for the rest of the calendar day. You will never pay more than 2,000 RWF for 24-hour municipal street or lot parking.",
+      name: "Christian Mugisha",
+      handle: "@cmugisha",
+      role: "Kigali Tech Commuter",
+      text: "The ParkZone app has completely changed driving in Kigali. Finding an open stall at Kigali Heights used to take 20 minutes; now I reserve it before I leave Kimihurura.",
     },
     {
-      q: "How can I pay using MTN Mobile Money or Airtel Money?",
-      a: "When you scan the QR code at any Kigali parking bay or start a session through the app, simply choose Mobile Money. Enter your registered Rwandan phone number (+250 78/79/72/73), and an automated USSD authorization prompt (*182#) will appear immediately on your handset.",
+      name: "Aline Uwase",
+      handle: "@aline_u",
+      role: "EV Motorist (BYD Atto 3)",
+      text: "Having live 60 kW DC charger telemetry right on my phone with zero parking surcharge is a dream. The design feels like Apple and Family.co combined.",
     },
     {
-      q: "How do parking marshals check if my vehicle is registered?",
-      a: "Under Rwanda Data Protection Law Nº 058/2021, marshals do not see driver personal details. Marshals scan or input the masked vehicle plate (e.g. RAD *** A). The system queries a cryptographic blind index to verify whether an active paid session or permit exists.",
+      name: "Eric Habimana",
+      handle: "@e_habimana",
+      role: "Fleet Operations Manager",
+      text: "Managing 14 logistics vans across Kigali with automatic 2,000 RWF daily caps and consolidated VAT invoices saved our company hours of accounting every month.",
     },
     {
-      q: "Where can I find EV Fast Charging spots in Kigali?",
-      a: "ParkZone has deployed Level 2 (22kW) and Rapid DC (60kW-150kW) CCS2 charging bays at major municipal hubs including Kigali Heights Underground, Downtown Car Park, Kigali Convention Centre, and Nyarutarama EV Charging.",
+      name: "Jean-Paul Nsengiyumva",
+      handle: "@jp_nsengi",
+      role: "Downtown Motorist",
+      text: "The 15-minute free grace period and instant MTN MoMo push checkout make quick downtown errands completely frictionless. Zero parking tickets ever since.",
     },
     {
-      q: "How do I access the administrative operations console?",
-      a: "Municipal marshals, parking operators, and city administrators can access the console by clicking the 'Admin Console' button in the top navigation or visiting /admin with authorized credentials.",
+      name: "Diane Gasana",
+      handle: "@diane_g",
+      role: "Creative Director",
+      text: "One of the cleanest digital products built in Rwanda. The UI animations, typography, and micro-interactions make checking into a parking lot feel delightfully modern.",
+    },
+    {
+      name: "Samson Kanimba",
+      handle: "@skanimba",
+      role: "City Marshal Supervisor",
+      text: "The administrative dispatch backend seamlessly mirrors the mobile driver app. Real-time ANPR loop sensors give our team 100% visibility over all bays.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0e0f11] text-[#f4f5f8] antialiased selection:bg-white selection:text-black font-sans">
-      <div className="relative max-w-[1360px] mx-auto p-3 sm:p-5 md:p-8 space-y-4 md:space-y-6">
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 1. HERO CARD (Dark rounded card with high-contrast panel right)*/}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <section className="bg-[#131417] text-white rounded-[32px] md:rounded-[40px] border border-white/10 p-6 sm:p-10 md:p-14 relative overflow-hidden shadow-2xl">
-          {/* Subtle background angled accent lines */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none opacity-20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <line x1="0" y1="120" x2="800" y2="40" stroke="white" strokeWidth="0.8" />
-            <line x1="0" y1="360" x2="1100" y2="120" stroke="white" strokeWidth="0.8" />
-            <line x1="100" y1="720" x2="1360" y2="340" stroke="white" strokeWidth="0.8" />
-          </svg>
-
-          {/* ──────────────── TOP NAVIGATION BAR ──────────────── */}
-          <header className="relative z-20 flex items-center justify-between pb-8 sm:pb-10 border-b border-white/10">
-            {/* Brand Logo */}
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/parkzone-logo.png"
-                  alt="ParkZone"
-                  className="h-7 md:h-8 w-auto object-contain invert brightness-200"
-                />
-              </Link>
+    <div className="min-h-screen bg-[#FBFAF9] text-[#1a1a1a] font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900">
+      {/* ────────────────── 1. FLOATING PILL NAVBAR (FAMILY.CO STYLE) ────────────────── */}
+      <header className="fixed top-4 left-0 right-0 z-50 px-4 sm:px-6 pointer-events-none">
+        <div className="max-w-4xl mx-auto backdrop-blur-xl bg-white/90 border border-neutral-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] rounded-full px-5 py-2.5 flex items-center justify-between pointer-events-auto transition-all">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-7 h-7 rounded-full bg-black flex items-center justify-center text-white shadow-xs">
+              <span className="font-extrabold text-xs tracking-tighter">P</span>
             </div>
-
-            {/* Center Navigation Links */}
-            <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-neutral-400">
-              <a href="#home" className="text-white font-bold hover:underline transition-all">
-                Home
-              </a>
-              <a href="#features" className="hover:text-white transition-colors">
-                Features
-              </a>
-              <a href="#pricing" className="hover:text-white transition-colors">
-                Pricing
-              </a>
-              <a href="#contact" className="hover:text-white transition-colors">
-                Contact
-              </a>
-              <a href="#faq" className="hover:text-white transition-colors">
-                FAQ
-              </a>
-            </nav>
-          </header>
-
-          {/* ──────────────── HERO MAIN GRID ──────────────── */}
-          <div className="relative z-10 pt-10 sm:pt-12 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-            {/* LEFT COLUMN: Headlines, App Badges, Social Proof */}
-            <div className="lg:col-span-7 flex flex-col justify-between space-y-8 sm:space-y-10">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-white text-xs font-semibold whitespace-nowrap shrink-0">
-                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                  <span>Kigali Smart Urban Mobility & IoT Metering</span>
-                </div>
-                <h1 className="text-4xl sm:text-5xl lg:text-[60px] font-extrabold text-white tracking-tight leading-[1.06]">
-                  Easy way to get <br />
-                  full control <br />
-                  of your parking
-                </h1>
-                <p className="text-sm sm:text-base text-neutral-400 max-w-lg leading-relaxed">
-                  A powerful municipal platform to navigate spaces, charge your EV, and settle
-                  tariffs across Kigali. Settle seamlessly with automated 2,000 RWF commuter caps
-                  and zero arrears.
-                </p>
-              </div>
-
-              {/* Crisp White App Store & Google Play Badges (matching Dribbble frame_00.png) */}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
-                {/* Apple App Store */}
-                <a
-                  href="#download"
-                  className="bg-white hover:bg-neutral-100 text-black px-4 sm:px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap shrink-0 border border-neutral-200/80"
-                >
-                  <svg className="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 1.01-2.85-.9.04-1.99.6-2.64 1.35-.58.67-.99 1.74-.94 2.79.99.08 1.95-.54 2.57-1.29z" />
-                  </svg>
-                  <div className="text-left flex flex-col justify-center">
-                    <span className="block text-[10px] tracking-tight text-neutral-600 font-semibold leading-none">
-                      Download on the
-                    </span>
-                    <span className="block text-xs sm:text-sm font-extrabold tracking-tight text-black leading-tight mt-0.5">
-                      App Store
-                    </span>
-                  </div>
-                </a>
-
-                {/* Google Play Store */}
-                <a
-                  href="#download"
-                  className="bg-white hover:bg-neutral-100 text-black px-4 sm:px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap shrink-0 border border-neutral-200/80"
-                >
-                  <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M3.609 1.814L13.793 12 3.61 22.186c-.37-.362-.61-.88-.61-1.463V3.277c0-.583.24-1.101.609-1.463zm11.233 11.235l2.427-2.427-12.01-6.93 9.583 9.357zm2.427-2.427l2.48 1.432c.732.423.732 1.114 0 1.536l-2.48 1.432-2.427-2.427 2.427-2.373zm-2.427 2.373l-9.583 9.357 12.01-6.93-2.427-2.427z" />
-                  </svg>
-                  <div className="text-left flex flex-col justify-center">
-                    <span className="block text-[10px] uppercase tracking-wider text-neutral-600 font-semibold leading-none">
-                      GET IT ON
-                    </span>
-                    <span className="block text-xs sm:text-sm font-extrabold tracking-tight text-black leading-tight mt-0.5">
-                      Google Play
-                    </span>
-                  </div>
-                </a>
-              </div>
-
-              {/* Bottom Social Proof & Stats */}
-              <div className="pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-6">
-                <div>
-                  <h3 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                    1.2M
-                  </h3>
-                  <p className="text-xs text-neutral-400 mt-0.5 whitespace-nowrap">
-                    Users already get the app
-                  </p>
-                </div>
-
-                {/* Clean Light Pill with overlapping avatars and arrow (matching Dribbble frame_00.png) */}
-                <div className="bg-white text-black p-1.5 pl-3.5 pr-2 rounded-full flex items-center gap-3 shadow-xl">
-                  <div className="flex -space-x-2.5 overflow-hidden">
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-neutral-800 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-                        alt="User"
-                        className="w-full h-full object-cover grayscale"
-                      />
-                    </div>
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-neutral-700 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
-                        alt="User"
-                        className="w-full h-full object-cover grayscale"
-                      />
-                    </div>
-                    <div className="w-8 h-8 rounded-full border-2 border-white bg-neutral-900 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80"
-                        alt="User"
-                        className="w-full h-full object-cover grayscale"
-                      />
-                    </div>
-                  </div>
-                  <Link
-                    href="/login"
-                    className="w-9 h-9 rounded-full bg-black text-white hover:bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 shrink-0 shadow-sm"
-                    title="Get Started"
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN: High-Contrast Light Card with Real Screenshot & Floating Chips */}
-            <div className="lg:col-span-5 relative flex justify-center">
-              <div className="w-full max-w-[430px] bg-[#f2f4f7] text-black rounded-[32px] md:rounded-[40px] p-6 sm:p-8 relative overflow-hidden shadow-2xl border border-white/20 flex flex-col items-center min-h-[580px] justify-between">
-                {/* 14-point Starburst in the background (bold contrast) */}
-                <div className="absolute -top-12 -right-12 pointer-events-none opacity-20">
-                  <StarburstGraphic className="w-64 h-64 text-black" />
-                </div>
-                <div className="absolute -bottom-16 -left-16 pointer-events-none opacity-20">
-                  <StarburstGraphic className="w-64 h-64 text-black" />
-                </div>
-
-                {/* Real App Screenshot Phone Frame */}
-                <div className="relative z-10 w-[260px] sm:w-[280px] my-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={appScreens[selectedHeroScreen].src}
-                    alt={appScreens[selectedHeroScreen].title}
-                    className="w-full h-auto object-contain drop-shadow-[0_25px_40px_rgba(0,0,0,0.35)] transition-all duration-300"
-                  />
-                </div>
-
-                {/* Floating Chips around the phone (positioned safely inside card padding) */}
-                <div className="absolute top-16 left-4 z-20 bg-white text-black text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-neutral-200 flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="w-3.5 h-3.5 rounded-full bg-black text-white flex items-center justify-center shrink-0">
-                    <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  </span>
-                  <span>{appScreens[selectedHeroScreen].chip1}</span>
-                </div>
-
-                <div className="absolute bottom-6 right-4 z-20 bg-black text-white text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 whitespace-nowrap">
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse shrink-0" />
-                  <span>{appScreens[selectedHeroScreen].chip2}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 2. FEATURES SECTION (Clean White Card - matching frame_03.png)*/}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <section
-          id="features"
-          className="bg-white text-black rounded-[32px] md:rounded-[40px] border border-neutral-200 p-8 sm:p-12 md:p-16 relative overflow-hidden shadow-xl transition-colors"
-        >
-          {/* Top-Right 14-Point Starburst in Crisp Light Gray */}
-          <div className="absolute top-4 right-4 sm:top-8 sm:right-8 pointer-events-none opacity-20">
-            <StarburstGraphic className="w-24 h-24 sm:w-36 sm:h-36 text-black" />
-          </div>
-
-          {/* Section Tag & Heading */}
-          <div className="max-w-2xl relative z-10">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400">
-              FEATURES
+            <span className="font-extrabold text-sm tracking-tight text-neutral-900 flex items-center gap-1.5">
+              ParkZone
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-[42px] font-extrabold text-black tracking-tight leading-tight mt-2">
-              ParkZone offers a comprehensive suite of features to help you stay ahead in urban parking
-            </h2>
+          </Link>
 
-            {/* Left / Right Carousel Controls */}
-            <div className="flex items-center gap-3 mt-6">
-              <button
-                onClick={handlePrevFeature}
-                aria-label="Previous Feature"
-                className="w-10 h-10 rounded-full border border-neutral-300 bg-[#f5f6f9] hover:bg-neutral-200 text-black flex items-center justify-center transition-colors shadow-xs"
-              >
-                ←
-              </button>
-              <button
-                onClick={handleNextFeature}
-                aria-label="Next Feature"
-                className="w-10 h-10 rounded-full bg-black hover:bg-neutral-800 text-white flex items-center justify-center transition-colors shadow-sm"
-              >
-                →
-              </button>
-            </div>
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-neutral-600">
+            <a href="#features" className="hover:text-black transition-colors">
+              Features
+            </a>
+            <a href="#details" className="hover:text-black transition-colors">
+              Details
+            </a>
+            <a href="#pricing" className="hover:text-black transition-colors">
+              Pricing
+            </a>
+            <a href="#testimonials" className="hover:text-black transition-colors">
+              Community
+            </a>
+            <a href="#faq" className="hover:text-black transition-colors">
+              FAQs
+            </a>
+          </nav>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Link
+              href="/login"
+              className="px-3.5 py-1.5 text-xs font-semibold text-neutral-700 hover:text-black transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/admin"
+              className="px-4 py-1.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+            >
+              <span>Admin Portal</span>
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </Link>
           </div>
+        </div>
+      </header>
 
-          {/* Feature Cards Row */}
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
-            {features.map((f, idx) => {
-              const isActive = idx === activeFeatureIndex;
-              return (
-                <div
-                  key={f.id}
-                  onClick={() => setActiveFeatureIndex(idx)}
-                  className={`p-6 rounded-3xl cursor-pointer transition-all duration-200 border flex flex-col justify-between min-h-[260px] ${
-                    isActive
-                      ? "bg-white border-black ring-2 ring-black/10 shadow-lg transform -translate-y-1"
-                      : "bg-[#f5f6f9] border-neutral-200 hover:bg-[#ebedf2]"
-                  }`}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-neutral-400">
-                        0{idx + 1}
-                      </span>
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          isActive ? "bg-black" : "bg-neutral-300"
-                        }`}
-                      />
-                    </div>
-                    <h3 className="text-lg font-bold text-black tracking-tight leading-snug">
-                      {f.title}
-                    </h3>
-                    <p className="text-xs text-neutral-600 leading-relaxed">
-                      {f.description}
-                    </p>
-                  </div>
+      {/* ────────────────── 2. HERO SECTION (TYPOGRAPHY & INTERACTIVE DEVICE) ────────────────── */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 max-w-6xl mx-auto text-center">
+        {/* Top Tag Pill */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-neutral-200/80 shadow-2xs mb-6 text-xs font-semibold text-neutral-700">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Kigali Smart Mobility Network</span>
+          <span className="text-neutral-300">·</span>
+          <span className="text-emerald-700 font-bold">15m Free Grace Period</span>
+        </div>
 
-                  {/* Card bottom widget preview */}
-                  <div className="mt-4 pt-3 border-t border-neutral-200 flex items-center justify-between text-xs">
-                    <span className="font-semibold text-black truncate max-w-[170px] whitespace-nowrap">
-                      {f.action}
-                    </span>
-                    <span className="text-neutral-400">→</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        {/* Hero Title */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-neutral-900 max-w-4xl mx-auto leading-[1.08]">
+          Your favorite <br className="hidden sm:inline" />
+          parking &amp; mobility app.
+        </h1>
 
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 3. CALL TO ACTION / 3-PHONE PREVIEW (matching frame_05.png)  */}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <section className="bg-[#131417] text-white rounded-[32px] md:rounded-[40px] border border-white/10 p-8 sm:p-14 md:p-18 pb-0 md:pb-0 relative overflow-hidden shadow-2xl">
-          {/* Angled background line art */}
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none opacity-15"
-            xmlns="http://www.w3.org/2000/svg"
+        {/* Hero Subtitle */}
+        <p className="mt-6 text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto leading-relaxed font-normal">
+          Explore Kigali with the smartest parking and EV charging network. Real-time bay occupancy, 60kW rapid charging, and automated daily commuter caps.
+        </p>
+
+        {/* Hero CTA Buttons */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href="/login"
+            className="px-6 py-3.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs sm:text-sm font-bold transition-all shadow-md flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <line x1="0" y1="200" x2="1400" y2="40" stroke="white" strokeWidth="0.8" />
-            <line x1="0" y1="500" x2="1400" y2="280" stroke="white" strokeWidth="0.8" />
-          </svg>
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.67-.82 1.13-1.96 1-3.1-.98.04-2.17.65-2.87 1.47-.62.72-1.16 1.88-1.01 2.99 1.1.08 2.21-.54 2.88-1.36z"/>
+            </svg>
+            <span>Download on iOS</span>
+          </Link>
+          <a
+            href="#features"
+            className="px-6 py-3.5 rounded-full bg-white hover:bg-neutral-50 text-neutral-800 text-xs sm:text-sm font-bold border border-neutral-200/90 transition-all shadow-2xs hover:scale-[1.02]"
+          >
+            Explore Interactive Demo
+          </a>
+        </div>
 
-          {/* Starburst graphic bottom-left */}
-          <div className="absolute -bottom-10 -left-10 pointer-events-none opacity-20">
-            <StarburstGraphic className="w-56 h-56 text-white" />
+        {/* ────────────────── INTERACTIVE APP SHOWCASE (PHONE FRAME) ────────────────── */}
+        <div className="mt-14 relative max-w-4xl mx-auto">
+          {/* Ambient Soft Glow */}
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-100/50 via-transparent to-transparent rounded-[60px] filter blur-3xl -z-10" />
+
+          {/* Interactive Screen Selector Pill Tabs */}
+          <div className="flex items-center justify-center gap-1.5 flex-wrap mb-8">
+            {appScreens.map((s, idx) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedHeroScreen(idx)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  selectedHeroScreen === idx
+                    ? "bg-black text-white shadow-xs scale-105"
+                    : "bg-white text-neutral-600 hover:text-black border border-neutral-200/70"
+                }`}
+              >
+                {s.title.split(" ")[0]} {s.title.split(" ")[1] || ""}
+              </button>
+            ))}
           </div>
 
-          <div className="relative z-10 max-w-3xl mx-auto text-center space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-neutral-300 text-xs font-semibold whitespace-nowrap">
-              <span>Rwanda Municipal Smart Parking</span>
+          {/* Phone Display Mockup */}
+          <div className="relative mx-auto max-w-[320px] sm:max-w-[360px] rounded-[48px] p-3 bg-neutral-900 border-[8px] border-neutral-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]">
+            {/* Phone Speaker Notch */}
+            <div className="w-24 h-4 bg-neutral-900 rounded-full mx-auto mb-2" />
+
+            <div className="relative rounded-[36px] overflow-hidden bg-white aspect-[9/19.5]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={appScreens[selectedHeroScreen].src}
+                alt={appScreens[selectedHeroScreen].title}
+                className="w-full h-full object-cover transition-opacity duration-300"
+              />
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight leading-tight">
-              Start your smart parking session <br />
-              today just in one click
-            </h2>
-            <p className="text-xs sm:text-sm text-neutral-400 max-w-xl mx-auto leading-relaxed">
-              To get started with our municipal smart parking network, locate a bay on the interactive map or scan any QR meter across Kigali. Pay seamlessly with MoMo, Airtel Money, or your ParkZone wallet. Manage parking from anywhere, at any time.
+
+            {/* Floating Live Pill 1: Top Left */}
+            <div className="absolute -top-4 -left-6 sm:-left-16 bg-white text-neutral-900 text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-neutral-200 flex items-center gap-1.5 whitespace-nowrap animate-bounce duration-1000">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>{appScreens[selectedHeroScreen].chip1}</span>
+            </div>
+
+            {/* Floating Live Pill 2: Bottom Right */}
+            <div className="absolute -bottom-4 -right-6 sm:-right-16 bg-black text-white text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-2 whitespace-nowrap">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{appScreens[selectedHeroScreen].chip2}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 3. EXPLORE IN A WHOLE NEW WAY (4 PILLARS) ────────────────── */}
+      <section className="py-20 px-4 sm:px-6 max-w-5xl mx-auto border-t border-neutral-200/60">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Smart Kigali Mobility
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight mt-3">
+            Explore Kigali in a whole new way.
+          </h2>
+          <p className="text-sm text-neutral-500 mt-2">
+            No paper tickets, no surprise penalties, and no guesswork. Four pillars designed for effortless city transit.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-2 hover:border-black transition-all">
+            <div className="w-10 h-10 rounded-2xl bg-neutral-100 text-neutral-900 flex items-center justify-center font-bold text-sm">
+              01
+            </div>
+            <h3 className="font-extrabold text-base text-neutral-900">Park</h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Reserve stalls with the fewest taps, or glide through ANPR camera gates with instant plate recognition.
             </p>
+          </div>
 
-            {/* CTA Buttons */}
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/login"
-                className="px-7 py-3.5 rounded-full text-xs sm:text-sm font-bold bg-white hover:bg-neutral-100 text-black transition-all transform hover:scale-105 shadow-xl whitespace-nowrap shrink-0"
-              >
-                Start for Free
-              </Link>
-              <Link
-                href="/admin"
-                className="px-7 py-3.5 rounded-full text-xs sm:text-sm font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 backdrop-blur-md transition-all whitespace-nowrap shrink-0 shadow-xs"
-              >
-                Open Admin Console →
-              </Link>
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-2 hover:border-black transition-all">
+            <div className="w-10 h-10 rounded-2xl bg-neutral-100 text-neutral-900 flex items-center justify-center font-bold text-sm">
+              02
+            </div>
+            <h3 className="font-extrabold text-base text-neutral-900">Charge</h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Locate 60kW DC rapid EV chargers with live kilowatt draw telemetry and 0 RWF parking surcharge.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-2 hover:border-black transition-all">
+            <div className="w-10 h-10 rounded-2xl bg-neutral-100 text-neutral-900 flex items-center justify-center font-bold text-sm">
+              03
+            </div>
+            <h3 className="font-extrabold text-base text-neutral-900">Pay</h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Tapless mobile checkout via MTN MoMo and Airtel Money with automatic receipts and zero queuing.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-2 hover:border-black transition-all">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold text-sm">
+              04
+            </div>
+            <h3 className="font-extrabold text-base text-neutral-900">Protect</h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              15-minute free grace period, statutory 2,000 RWF daily cap, and blind-hash plate security.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 4. BENTO PRODUCT SHOWCASE (PARK, CHARGE, PAY) ────────────────── */}
+      <section id="features" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight">
+            Park, charge, pay. <br />
+            All in one place.
+          </h2>
+          <p className="text-sm sm:text-base text-neutral-500 mt-3">
+            Flawless essentials. Easily reserve spots with the fewest taps, or share your digital QR pass to enter and exit gated municipal facilities.
+          </p>
+        </div>
+
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          {/* Bento Card 1: Live Bay Navigation (Span 7) */}
+          <div className="md:col-span-7 p-8 rounded-[36px] bg-white border border-neutral-200/90 shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                ULTRASONIC SENSOR TELEMETRY
+              </span>
+              <h3 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
+                Live Space Navigation &amp; Allocation
+              </h3>
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed max-w-md">
+                IoT ultrasonic loop detectors and overhead camera sensors guide you straight to vacant stalls across Kigali Convention Centre, Kigali Heights, and Downtown CBD.
+              </p>
+            </div>
+            <div className="rounded-2xl overflow-hidden border border-neutral-200/80 bg-[#f8f9fa] p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/screenshots/kigali-convention-park.png"
+                alt="Parking Navigation"
+                className="w-full h-56 object-cover rounded-xl"
+              />
             </div>
           </div>
 
-          {/* 3-Phone Mockup Showcase rising from the bottom edge */}
-          <div className="mt-12 relative z-10 flex items-end justify-center gap-4 sm:gap-8 -mb-20 sm:-mb-24">
-            {/* Phone 1: Left (Live EV Map Navigation) */}
-            <div className="hidden md:block w-[220px] sm:w-[250px] lg:w-[270px] transform -rotate-3 translate-y-10 hover:translate-y-4 transition-all duration-300">
+          {/* Bento Card 2: 2,000 RWF Commuter Cap (Span 5) */}
+          <div className="md:col-span-5 p-8 rounded-[36px] bg-black text-white shadow-xl flex flex-col justify-between space-y-6">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold uppercase">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Statutory Ceiling
+              </div>
+              <h3 className="text-2xl font-extrabold text-white tracking-tight">
+                Automated 2,000 RWF Commuter Cap
+              </h3>
+              <p className="text-xs text-neutral-300 leading-relaxed">
+                Hourly transient fees (300 RWF/hr) freeze the moment you reach 2,000 RWF. Enjoy unlimited re-entries, 24-hour protection, and zero surprise penalties.
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-2 font-mono text-xs">
+              <div className="flex justify-between text-neutral-400">
+                <span>Standard Transient</span>
+                <span>300 RWF/hr</span>
+              </div>
+              <div className="flex justify-between font-bold text-emerald-400 text-sm">
+                <span>Maximum Daily Ceiling</span>
+                <span>2,000 RWF</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bento Card 3: Rapid EV Fast-Charging (Span 6) */}
+          <div className="md:col-span-6 p-8 rounded-[36px] bg-white border border-neutral-200/90 shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                OCPP 2.0.1 PROTOCOL
+              </span>
+              <h3 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
+                Rapid EV Fast Charging Network
+              </h3>
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                Locate high-speed 60kW CCS2 and Type 2 charging bays. View live power output in kW, battery percentage, and 0 RWF parking during charging.
+              </p>
+            </div>
+            <div className="rounded-2xl overflow-hidden border border-neutral-200/80 bg-[#f8f9fa] p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/screenshots/ev-map-navigation.png"
-                alt="ParkZone EV Map Navigation"
-                className="w-full h-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.9)]"
+                alt="EV Map Navigation"
+                className="w-full h-48 object-cover rounded-xl"
               />
             </div>
+          </div>
 
-            {/* Phone 2: Center Highlighted Phone (Parking Spot Reservation H-01) */}
-            <div className="w-[260px] sm:w-[290px] lg:w-[310px] relative z-20 transform hover:scale-105 transition-all duration-300">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/screenshots/parking-spot-selection.png"
-                alt="ParkZone Parking Spot Selection"
-                className="w-full h-auto object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.95)]"
-              />
+          {/* Bento Card 4: 3D Vehicle Telemetry & Zero Arrears (Span 6) */}
+          <div className="md:col-span-6 p-8 rounded-[36px] bg-white border border-neutral-200/90 shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                BLIND-HASH PRIVACY
+              </span>
+              <h3 className="text-2xl font-extrabold text-neutral-900 tracking-tight">
+                Vehicle Telemetry &amp; Zero Arrears
+              </h3>
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">
+                Register your Rwanda license plate with cryptographic hash enforcement. Track battery state-of-charge, check-ins, and confirm clean standing with Irembo.
+              </p>
             </div>
-
-            {/* Phone 3: Right (3D Vehicle Telemetry & Customizer) */}
-            <div className="hidden md:block w-[220px] sm:w-[250px] lg:w-[270px] transform rotate-3 translate-y-10 hover:translate-y-4 transition-all duration-300">
+            <div className="rounded-2xl overflow-hidden border border-neutral-200/80 bg-[#f8f9fa] p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/screenshots/vehicle-telemetry.png"
-                alt="ParkZone 3D Vehicle Telemetry"
-                className="w-full h-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.9)]"
+                alt="Vehicle Telemetry"
+                className="w-full h-48 object-cover rounded-xl"
               />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 4. PRICING PLANS SECTION                                    */}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <section
-          id="pricing"
-          className="bg-white text-black rounded-[32px] md:rounded-[40px] border border-neutral-200 p-8 sm:p-12 md:p-16 relative overflow-hidden shadow-xl transition-colors"
-        >
-          <div className="text-center max-w-2xl mx-auto space-y-2 mb-10">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400">
-              PRICING
+      {/* ────────────────── 5. DETAILS THAT MATTER (SIGNATURE FAMILY.CO SECTION) ────────────────── */}
+      <section id="details" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto border-t border-neutral-200/60">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
+            Details that matter.
+          </h2>
+          <p className="text-sm sm:text-base text-neutral-500 mt-2">
+            We sweat the details, no matter how small.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Detail Card 1 */}
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-3">
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+              01 · Live Telemetry
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
-              Simple & Transparent Parking Plans
-            </h2>
-            <p className="text-xs sm:text-sm text-neutral-600">
-              Clear, law-compliant tariffs designed for daily commuters, short visits, and corporate fleets in Kigali.
+            <h3 className="font-extrabold text-base text-neutral-900">
+              Monitor In Real-Time
+            </h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Track the status of your parking session in real-time, with live minute updates, duration timers, notifications, and smooth state transitions.
             </p>
           </div>
 
-          {/* 3 Pricing Plans */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Standard Driver */}
-            <div className="p-7 rounded-3xl bg-[#f5f6f9] border border-neutral-200 space-y-5 flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-white border border-neutral-200 px-2 py-0.5 rounded">
-                  Driver Hourly
-                </span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-black">300</span>
-                  <span className="text-xs font-bold text-neutral-500">RWF / hour</span>
-                </div>
-                <p className="text-xs text-neutral-600">
-                  Ideal for quick errands, shopping, or appointments in the City of Kigali.
-                </p>
-                <ul className="space-y-2 text-xs text-black pt-2">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-                    <span>15-minute free grace period</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-                    <span>Real-time space navigation</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-                    <span>Instant MoMo & Airtel payment</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/login"
-                className="w-full py-2.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-bold text-center block transition-colors shadow-xs"
-              >
-                Park Now
-              </Link>
-            </div>
-
-            {/* Commuter Pass (Featured Black Card) */}
-            <div className="p-7 rounded-3xl bg-black text-white border border-neutral-800 space-y-5 flex flex-col justify-between shadow-2xl relative transform md:-translate-y-2">
-              <div className="absolute top-4 right-4 text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-white text-black shadow-xs">
-                POPULAR
-              </div>
-              <div className="space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-white/20 px-2 py-0.5 rounded">
-                  Daily Commuter Cap
-                </span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-white">2,000</span>
-                  <span className="text-xs font-bold text-neutral-400">RWF / day</span>
-                </div>
-                <p className="text-xs text-neutral-300">
-                  Full 24-hour access with automatic capping. Never overpay on full working days.
-                </p>
-                <ul className="space-y-2 text-xs text-white font-medium pt-2">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-                    <span>Automatic daily ceiling</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-                    <span>Unlimited city re-entries</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-                    <span>Overnight lot protection</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-                    <span>Zero surprise parking citations</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/login"
-                className="w-full py-2.5 rounded-full bg-white text-black hover:bg-neutral-200 text-xs font-bold text-center block transition-colors shadow-md"
-              >
-                Get Commuter Pass
-              </Link>
-            </div>
-
-            {/* Corporate Fleet */}
-            <div className="p-7 rounded-3xl bg-[#f5f6f9] border border-neutral-200 space-y-5 flex flex-col justify-between">
-              <div className="space-y-3">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-black bg-white border border-neutral-200 px-2 py-0.5 rounded">
-                  Corporate Fleet
-                </span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-black">Custom</span>
-                  <span className="text-xs font-bold text-neutral-500">monthly invoicing</span>
-                </div>
-                <p className="text-xs text-neutral-600">
-                  Dedicated portals for logistics firms, taxi fleets, and corporate enterprises.
-                </p>
-                <ul className="space-y-2 text-xs text-black pt-2">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-                    <span>Consolidated monthly VAT invoice</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-                    <span>Multi-vehicle management</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
-                    <span>Reserved commercial bays</span>
-                  </li>
-                </ul>
-              </div>
-              <Link
-                href="/admin"
-                className="w-full py-2.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-bold text-center block transition-colors shadow-xs"
-              >
-                Contact Fleet Sales
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 5. FAQ SECTION (Accordion)                                  */}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <section
-          id="faq"
-          className="bg-[#131417] text-white rounded-[32px] md:rounded-[40px] border border-white/10 p-8 sm:p-12 md:p-16 relative overflow-hidden shadow-2xl"
-        >
-          <div className="max-w-2xl mx-auto text-center space-y-2 mb-10">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400">
-              FAQ
+          {/* Detail Card 2 */}
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-3">
+            <span className="text-xs font-bold text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-full inline-block">
+              02 · Blind-Hash Protection
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Frequently Asked Questions
-            </h2>
-            <p className="text-xs sm:text-sm text-neutral-400">
-              Everything you need to know about parking, EV charging, and rates in Kigali.
+            <h3 className="font-extrabold text-base text-neutral-900">
+              Protect Your Vehicle
+            </h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Understand every fee before you depart. Receive warnings about statutory limits and get full verification of clean citation standing with Irembo.
             </p>
           </div>
 
-          <div className="max-w-2xl mx-auto space-y-3">
-            {faqs.map((faq, index) => {
-              const isOpen = openFaq === index;
-              return (
-                <div
-                  key={index}
-                  className="rounded-2xl border border-white/10 bg-[#1a1b20] overflow-hidden transition-colors"
-                >
-                  <button
-                    onClick={() => setOpenFaq(isOpen ? null : index)}
-                    className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 text-xs sm:text-sm font-bold text-white hover:text-neutral-300 transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <span className="text-lg leading-none font-bold text-white">
-                      {isOpen ? "−" : "+"}
-                    </span>
-                  </button>
-                  {isOpen && (
-                    <div className="px-5 pb-4 text-xs text-neutral-400 leading-relaxed border-t border-white/5 pt-3">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 6. CONTACT INFORMATION SECTION                             */}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <section
-          id="contact"
-          className="bg-white text-black rounded-[32px] md:rounded-[40px] border border-neutral-200 p-8 sm:p-12 md:p-16 relative overflow-hidden shadow-xl transition-colors"
-        >
-          {/* Decorative Starburst Top-Right */}
-          <div className="absolute top-4 right-4 sm:top-8 sm:right-8 pointer-events-none opacity-20">
-            <StarburstGraphic className="w-28 h-28 sm:w-40 sm:h-40 text-black" />
-          </div>
-
-          <div className="text-center max-w-2xl mx-auto space-y-2 mb-10 relative z-10">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-neutral-400">
-              CONTACT US
+          {/* Detail Card 3 */}
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-3">
+            <span className="text-xs font-bold text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-full inline-block">
+              03 · Smart Wallet
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
-              Get in Touch with ParkZone
-            </h2>
-            <p className="text-xs sm:text-sm text-neutral-600 max-w-lg mx-auto leading-relaxed">
-              Have questions regarding municipal parking bays, commuter rates, EV fast charging stations, or corporate fleet onboarding? Reach out to our Kigali team directly.
+            <h3 className="font-extrabold text-base text-neutral-900">
+              Organise Your Trips
+            </h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Take full control over your mobility budget. Automatic daily caps at 2,000 RWF, multi-vehicle management, and downloadable corporate VAT receipts.
             </p>
           </div>
 
-          {/* Cards & Contact Form Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
-            {/* Left Column: Direct Contact Channels (Phone & Email) */}
-            <div className="lg:col-span-5 space-y-4 flex flex-col justify-between">
-              {/* Phone Card */}
-              <div className="p-6 rounded-3xl bg-[#f5f6f9] border border-neutral-200 space-y-3 relative group hover:border-black transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                    </svg>
-                  </div>
-                  <button
-                    onClick={() => handleCopy("+25091700692", "phone")}
-                    className="text-[11px] font-bold text-neutral-600 hover:text-black bg-white px-2.5 py-1 rounded-full border border-neutral-200 shadow-xs transition-colors"
-                  >
-                    {copiedItem === "phone" ? "Copied!" : "Copy"}
-                  </button>
+          {/* Detail Card 4 */}
+          <div className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-3">
+            <span className="text-xs font-bold text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-full inline-block">
+              04 · Clear Telemetry
+            </span>
+            <h3 className="font-extrabold text-base text-neutral-900">
+              See Everything Clearly
+            </h3>
+            <p className="text-xs text-neutral-500 leading-relaxed">
+              Alleviate all confusion with crystal-clear breakdowns of facilities, underground floor topologies, and live kilowatt EV power delivery.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 6. FRIENDS OF PARKZONE (TESTIMONIALS) ────────────────── */}
+      <section id="testimonials" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto border-t border-neutral-200/60">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
+            Friends of ParkZone
+          </h2>
+          <p className="text-sm sm:text-base text-neutral-500 mt-2">
+            See what Kigali motorists, EV drivers, and fleet operators are saying.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {testimonials.map((t, idx) => (
+            <div
+              key={idx}
+              className="p-6 rounded-3xl bg-white border border-neutral-200/80 shadow-2xs space-y-4 hover:border-black transition-all flex flex-col justify-between"
+            >
+              <p className="text-xs sm:text-sm text-neutral-700 leading-relaxed">
+                &ldquo;{t.text}&rdquo;
+              </p>
+              <div className="flex items-center gap-3 pt-2 border-t border-neutral-100">
+                <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center">
+                  {t.name.slice(0, 1)}
                 </div>
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400">
-                    Phone & WhatsApp
-                  </span>
-                  <a
-                    href="tel:+25091700692"
-                    className="text-xl sm:text-2xl font-black text-black hover:underline block tracking-tight mt-0.5"
-                  >
+                  <h4 className="font-bold text-xs text-neutral-900">{t.name}</h4>
+                  <span className="text-[10px] text-neutral-400 block">{t.role}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ────────────────── 7. PRICING PLANS (MINIMALIST FAMILY CARDS) ────────────────── */}
+      <section id="pricing" className="py-20 px-4 sm:px-6 max-w-6xl mx-auto border-t border-neutral-200/60">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Regulated Tariffs
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight mt-3">
+            Transparent, statutory pricing.
+          </h2>
+          <p className="text-sm sm:text-base text-neutral-500 mt-2">
+            Regulated by RURA &amp; City of Kigali. No hidden fees or surprise enforcement charges.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          {/* Plan 1: Hourly Transient */}
+          <div className="p-8 rounded-[36px] bg-white border border-neutral-200 shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                TRANSIENT DRIVER
+              </span>
+              <div>
+                <span className="text-4xl font-extrabold text-neutral-900">300</span>
+                <span className="text-xs font-bold text-neutral-500 ml-1">RWF / hour</span>
+              </div>
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                Ideal for quick downtown errands, dining, or shopping across Kigali municipal parking hubs.
+              </p>
+              <ul className="space-y-2.5 text-xs text-neutral-700 pt-2">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>15-minute free grace period</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>Real-time vacancy space navigation</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>Instant MTN MoMo &amp; Airtel payment</span>
+                </li>
+              </ul>
+            </div>
+            <Link
+              href="/login"
+              className="w-full py-3 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-bold text-center block transition-colors"
+            >
+              Park Now
+            </Link>
+          </div>
+
+          {/* Plan 2: Commuter Cap (Featured Black Card) */}
+          <div className="p-8 rounded-[36px] bg-black text-white shadow-2xl flex flex-col justify-between space-y-6 relative transform md:-translate-y-2">
+            <div className="absolute top-5 right-5 text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-emerald-500 text-white shadow-xs">
+              MUNICIPAL CAP
+            </div>
+            <div className="space-y-4">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                DAILY COMMUTER CEILING
+              </span>
+              <div>
+                <span className="text-4xl font-extrabold text-white">2,000</span>
+                <span className="text-xs font-bold text-neutral-400 ml-1">RWF / day</span>
+              </div>
+              <p className="text-xs text-neutral-300 leading-relaxed">
+                Full 24-hour citywide access with automatic tariff capping. Never overpay on full working days.
+              </p>
+              <ul className="space-y-2.5 text-xs text-neutral-200 pt-2 font-medium">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span>Automatic daily ceiling at 2,000 RWF</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span>Unlimited citywide re-entries</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span>24-hour monitored overnight security</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                  <span>Zero surprise parking citations</span>
+                </li>
+              </ul>
+            </div>
+            <Link
+              href="/login"
+              className="w-full py-3 rounded-full bg-white text-black hover:bg-neutral-100 text-xs font-bold text-center block transition-colors shadow-md"
+            >
+              Get Commuter Pass
+            </Link>
+          </div>
+
+          {/* Plan 3: Corporate Fleet */}
+          <div className="p-8 rounded-[36px] bg-white border border-neutral-200 shadow-2xs flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                ENTERPRISE FLEET
+              </span>
+              <div>
+                <span className="text-4xl font-extrabold text-neutral-900">Custom</span>
+                <span className="text-xs font-bold text-neutral-500 ml-1">monthly billing</span>
+              </div>
+              <p className="text-xs text-neutral-600 leading-relaxed">
+                Dedicated management portal for taxi operators, logistics fleets, and corporate enterprises.
+              </p>
+              <ul className="space-y-2.5 text-xs text-neutral-700 pt-2">
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>Consolidated monthly RRA VAT invoice</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>Multi-vehicle license plate management</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span>Dedicated commercial stall allocations</span>
+                </li>
+              </ul>
+            </div>
+            <Link
+              href="/admin"
+              className="w-full py-3 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-900 text-xs font-bold text-center block transition-colors"
+            >
+              Contact Fleet Sales
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 8. DIRECT MESSAGE & CONTACT ────────────────── */}
+      <section className="py-20 px-4 sm:px-6 max-w-6xl mx-auto border-t border-neutral-200/60">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-5 space-y-4">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+              24/7 Municipal Hotline
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
+              Get in touch with mobility dispatch.
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed">
+              Have questions regarding parking reservations, EV charging, or fleet accounts? Our Kigali dispatch support team is available around the clock.
+            </p>
+
+            <div className="space-y-3 pt-2">
+              <div className="p-4 rounded-2xl bg-white border border-neutral-200 flex items-center justify-between shadow-2xs">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-neutral-400 block">Phone &amp; WhatsApp</span>
+                  <a href="tel:+25091700692" className="font-bold text-sm text-neutral-900 hover:underline">
                     +25091700692
                   </a>
                 </div>
-                <p className="text-xs text-neutral-500 leading-relaxed">
-                  Direct municipal driver hotline, QR payment support, and 24/7 emergency parking dispatch.
-                </p>
-                <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold text-black">
-                  <span className="w-2 h-2 rounded-full bg-black animate-pulse" />
-                  <span>Available 24/7 · Mon to Sun</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy("+25091700692", "phone")}
+                  className="px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-700 text-[11px] font-semibold hover:bg-neutral-200"
+                >
+                  {copiedItem === "phone" ? "Copied!" : "Copy"}
+                </button>
               </div>
 
-              {/* Email Card */}
-              <div className="p-6 rounded-3xl bg-[#f5f6f9] border border-neutral-200 space-y-3 relative group hover:border-black transition-all">
-                <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-2xl bg-black text-white flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="20" height="16" x="2" y="4" rx="2" />
-                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                    </svg>
-                  </div>
-                  <button
-                    onClick={() => handleCopy("info@parkzone.dev", "email")}
-                    className="text-[11px] font-bold text-neutral-600 hover:text-black bg-white px-2.5 py-1 rounded-full border border-neutral-200 shadow-xs transition-colors"
-                  >
-                    {copiedItem === "email" ? "Copied!" : "Copy"}
-                  </button>
-                </div>
+              <div className="p-4 rounded-2xl bg-white border border-neutral-200 flex items-center justify-between shadow-2xs">
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400">
-                    Official Email
-                  </span>
-                  <a
-                    href="mailto:info@parkzone.dev"
-                    className="text-xl sm:text-2xl font-black text-black hover:underline block tracking-tight mt-0.5 truncate"
-                  >
+                  <span className="text-[10px] uppercase font-bold text-neutral-400 block">Official Email</span>
+                  <a href="mailto:info@parkzone.dev" className="font-bold text-sm text-neutral-900 hover:underline">
                     info@parkzone.dev
                   </a>
                 </div>
-                <p className="text-xs text-neutral-500 leading-relaxed">
-                  General inquiries, partner integrations, API access, and corporate fleet onboarding.
-                </p>
-                <div className="pt-2 flex items-center gap-2 text-[11px] font-semibold text-neutral-600">
-                  <span className="w-1.5 h-1.5 rounded-full bg-black" />
-                  <span>Typical response time: under 1 hour</span>
-                </div>
-              </div>
-
-              {/* Location Mini Card */}
-              <div className="p-5 rounded-3xl bg-black text-white space-y-2 shadow-lg">
-                <div className="flex items-center gap-2 text-xs font-bold text-neutral-300">
-                  <span className="w-2 h-2 rounded-full bg-white" />
-                  <span>Kigali Operations & City Hub</span>
-                </div>
-                <p className="text-sm font-semibold text-white">
-                  KG 2 Roundabout, Kimihurura & Kigali CBD
-                </p>
-                <p className="text-[11px] text-neutral-400">
-                  Kigali, Rwanda · Regulated by RURA & City of Kigali
-                </p>
+                <button
+                  type="button"
+                  onClick={() => handleCopy("info@parkzone.dev", "email")}
+                  className="px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-700 text-[11px] font-semibold hover:bg-neutral-200"
+                >
+                  {copiedItem === "email" ? "Copied!" : "Copy"}
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Right Column: Direct Message / Inquiry Form (Monochrome) */}
-            <div className="lg:col-span-7 bg-[#f5f6f9] border border-neutral-200 rounded-3xl p-6 sm:p-8 flex flex-col justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-black tracking-tight">
-                  Send Us a Direct Message
-                </h3>
-                <p className="text-xs text-neutral-600 mt-1">
-                  Fill in the details below and a ParkZone mobility specialist will respond promptly.
+          <div className="lg:col-span-7 p-8 rounded-[36px] bg-white border border-neutral-200/90 shadow-2xs">
+            <h3 className="font-extrabold text-lg text-neutral-900">Send an Inquiry</h3>
+            <p className="text-xs text-neutral-400 mt-0.5">
+              Leave your details below and a mobility dispatch agent will respond within 15 minutes.
+            </p>
+
+            {contactSubmitted ? (
+              <div className="mt-6 p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
+                <span className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto text-xs font-bold">
+                  OK
+                </span>
+                <h4 className="font-bold text-emerald-900 text-sm">Message Dispatched</h4>
+                <p className="text-xs text-emerald-700">
+                  Thank you! Our Kigali municipal dispatch team has received your message.
                 </p>
+              </div>
+            ) : (
+              <form onSubmit={handleContactSubmit} className="mt-5 space-y-3.5 text-xs">
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Christian Mugisha"
+                    value={contactForm.name}
+                    onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                    className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:border-black"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700">Phone or Email</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="+250 788... or driver@email.com"
+                    value={contactForm.contact}
+                    onChange={(e) => setContactForm({ ...contactForm, contact: e.target.value })}
+                    className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:border-black"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700">Your Message</label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Tell us about your fleet inquiry, citation question, or parking stall reservation..."
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                    className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-xl px-3.5 py-2.5 text-xs text-neutral-900 focus:outline-none focus:border-black"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-full bg-black hover:bg-neutral-800 text-white font-bold text-xs transition-colors shadow-xs"
+                >
+                  Send Message
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
 
-                {contactSubmitted ? (
-                  <div className="mt-8 p-6 rounded-2xl bg-white border border-black/20 text-center space-y-2">
-                    <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center mx-auto text-sm font-bold">
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                    <h4 className="text-base font-bold text-black">Message Received</h4>
-                    <p className="text-xs text-neutral-600 max-w-sm mx-auto">
-                      Thank you for contacting ParkZone. Our team at info@parkzone.dev has logged your inquiry and will follow up shortly.
-                    </p>
+      {/* ────────────────── 9. FREQUENTLY ASKED QUESTIONS (ACCORDIONS) ────────────────── */}
+      <section id="faq" className="py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-neutral-200/60">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-sm text-neutral-500 mt-2">
+            Everything you need to know about parking rules, tariffs, and EV charging in Kigali.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {faqs.map((f, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div
+                key={idx}
+                className="rounded-2xl bg-white border border-neutral-200/80 overflow-hidden shadow-2xs transition-all"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  className="w-full text-left p-5 flex items-center justify-between text-xs sm:text-sm font-bold text-neutral-900"
+                >
+                  <span>{f.q}</span>
+                  <span className="text-base text-neutral-400 font-normal">
+                    {isOpen ? "−" : "+"}
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-5 pt-0 text-xs text-neutral-600 leading-relaxed border-t border-neutral-100 pt-3">
+                    {f.a}
                   </div>
-                ) : (
-                  <form onSubmit={handleContactSubmit} className="mt-6 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-black mb-1.5">
-                          Your Name
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={contactForm.name}
-                          onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                          placeholder="e.g. Jean-Luc Mugisha"
-                          className="w-full px-4 py-2.5 rounded-xl bg-white border border-neutral-300 text-black text-xs font-medium placeholder:text-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-black mb-1.5">
-                          Phone or Email
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={contactForm.contact}
-                          onChange={(e) => setContactForm({ ...contactForm, contact: e.target.value })}
-                          placeholder="+250 78... or name@company.rw"
-                          className="w-full px-4 py-2.5 rounded-xl bg-white border border-neutral-300 text-black text-xs font-medium placeholder:text-neutral-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-black mb-1.5">
-                        Inquiry or Message
-                      </label>
-                      <textarea
-                        rows={8}
-                        required
-                        value={contactForm.message}
-                        onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                        placeholder="Tell us about your parking query, fleet requirements, or station location..."
-                        className="w-full min-h-[190px] sm:min-h-[220px] px-4 py-3 rounded-2xl bg-white border border-neutral-300 text-black text-xs sm:text-sm font-medium leading-relaxed placeholder:text-neutral-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black/10 resize-y transition-all"
-                      />
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                      <p className="text-[11px] text-neutral-500">
-                        We safeguard your information under Rwanda Data Law Nº 058/2021.
-                      </p>
-                      <button
-                        type="submit"
-                        className="w-full sm:w-auto px-7 py-3 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-bold transition-all shadow-md whitespace-nowrap shrink-0"
-                      >
-                        Send Message →
-                      </button>
-                    </div>
-                  </form>
                 )}
               </div>
+            );
+          })}
+        </div>
+      </section>
 
-              {/* Fast Action Footer */}
-              <div className="mt-6 pt-4 border-t border-neutral-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <span className="text-neutral-500">Need immediate on-site marshal assistance?</span>
-                <a
-                  href="tel:+25091700692"
-                  className="font-bold text-black hover:underline flex items-center gap-1"
-                >
-                  <span>Call +25091700692</span>
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
-                </a>
-              </div>
+      {/* ────────────────── 10. PRE-FOOTER CTA BANNER (EXPLORE PARKZONE) ────────────────── */}
+      <section className="py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div className="p-10 sm:p-16 rounded-[40px] bg-black text-white text-center space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="max-w-2xl mx-auto space-y-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Explore ParkZone
             </div>
-          </div>
-        </section>
-
-        {/* ══════════════════════════════════════════════════════════════ */}
-        {/* 7. MINIMALIST FOOTER                                        */}
-        {/* ══════════════════════════════════════════════════════════════ */}
-        <footer className="bg-[#131417] text-white rounded-[32px] md:rounded-[40px] border border-white/10 p-8 sm:p-12 relative overflow-hidden shadow-2xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-white/10">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/parkzone-logo.png"
-                  alt="ParkZone"
-                  className="h-7 w-auto object-contain invert brightness-200"
-                />
-              </Link>
-              <span className="text-[10px] font-semibold text-neutral-400 border-l border-white/20 pl-3 whitespace-nowrap">
-                Kigali Urban Mobility
-              </span>
-            </div>
-
-            {/* Links */}
-            <div className="flex flex-wrap items-center gap-6 text-xs text-neutral-400">
-              <a href="#home" className="hover:text-white transition-colors">
-                Home
-              </a>
-              <a href="#features" className="hover:text-white transition-colors">
-                Features
-              </a>
-              <a href="#pricing" className="hover:text-white transition-colors">
-                Pricing
-              </a>
-              <a href="#contact" className="hover:text-white transition-colors">
-                Contact
-              </a>
-              <a href="#faq" className="hover:text-white transition-colors">
-                FAQ
-              </a>
-              <Link href="/admin" className="text-white font-bold hover:underline whitespace-nowrap">
-                Admin Console
-              </Link>
-            </div>
-          </div>
-
-          {/* Legal and Compliance */}
-          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-500">
-            <p className="whitespace-nowrap">© 2026 ParkZone Ltd. All rights reserved. Kigali, Rwanda.</p>
-            <p className="flex items-center gap-2 whitespace-nowrap">
-              <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
-              <span>Compliant with Rwanda Data Protection Law Nº 058/2021</span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
+              Ready to experience effortless parking?
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-lg mx-auto">
+              Join thousands of Kigali motorists and fleet drivers navigating the city with ParkZone. No tickets, no stress.
             </p>
           </div>
-        </footer>
-      </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Link
+              href="/login"
+              className="px-6 py-3.5 rounded-full bg-white text-black hover:bg-neutral-100 text-xs font-bold transition-all shadow-md"
+            >
+              Get Started Free
+            </Link>
+            <Link
+              href="/admin"
+              className="px-6 py-3.5 rounded-full bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-bold border border-neutral-800 transition-all"
+            >
+              Launch Admin Dashboard
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 11. MINIMALIST FOOTER (FAMILY.CO STYLE) ────────────────── */}
+      <footer className="py-14 px-4 sm:px-6 max-w-6xl mx-auto border-t border-neutral-200/80 text-xs text-neutral-500">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
+          <div className="col-span-2 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-black flex items-center justify-center text-white text-xs font-bold">
+                P
+              </div>
+              <span className="font-extrabold text-sm text-neutral-900">ParkZone</span>
+            </div>
+            <p className="text-xs text-neutral-500 max-w-sm leading-relaxed">
+              ParkZone is a modern municipal parking &amp; EV mobility platform designed to make city transit easy for everyone.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <span className="font-bold text-neutral-900 uppercase text-[10px] tracking-wider block">
+              Drivers
+            </span>
+            <ul className="space-y-1.5 text-neutral-600">
+              <li><a href="#features" className="hover:text-black">Bay Navigation</a></li>
+              <li><a href="#pricing" className="hover:text-black">Commuter Pass</a></li>
+              <li><Link href="/login" className="hover:text-black">MoMo Payment</Link></li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <span className="font-bold text-neutral-900 uppercase text-[10px] tracking-wider block">
+              Network
+            </span>
+            <ul className="space-y-1.5 text-neutral-600">
+              <li><a href="#features" className="hover:text-black">60kW EV Fast Hubs</a></li>
+              <li><a href="#details" className="hover:text-black">ANPR Camera Gates</a></li>
+              <li><a href="#details" className="hover:text-black">Ultrasonic Sensors</a></li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <span className="font-bold text-neutral-900 uppercase text-[10px] tracking-wider block">
+              Administration
+            </span>
+            <ul className="space-y-1.5 text-neutral-600">
+              <li><Link href="/admin" className="hover:text-black">Master Dispatch</Link></li>
+              <li><Link href="/locations" className="hover:text-black">Facility Topology</Link></li>
+              <li><Link href="/system" className="hover:text-black">System Logs</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-neutral-200/60 gap-3 text-[11px] text-neutral-400">
+          <div>
+            © 2026 ParkZone Rwanda. Regulated by RURA &amp; City of Kigali.
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hover:text-neutral-700 cursor-pointer">Privacy Policy</span>
+            <span>·</span>
+            <span className="hover:text-neutral-700 cursor-pointer">Terms of Service</span>
+            <span>·</span>
+            <span className="hover:text-neutral-700 cursor-pointer">Irembo API Docs</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
