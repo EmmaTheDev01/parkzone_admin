@@ -397,6 +397,25 @@ export const parkingService = {
 
   // ── SPACES & BAYS ──
   async getSpaces(locationId?: string): Promise<ParkingSpace[]> {
+    // 1. Try server Admin API (bypasses remote RLS/table grant limits)
+    if (typeof window !== "undefined") {
+      try {
+        const url = locationId
+          ? `/api/parking/spaces?locationId=${encodeURIComponent(locationId)}`
+          : "/api/parking/spaces";
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.success && Array.isArray(json.spaces)) {
+            return json.spaces.map((s: any) => this.normalizeSpace(s));
+          }
+        }
+      } catch (apiErr) {
+        console.warn("[parkingService] /api/parking/spaces fetch warning:", apiErr);
+      }
+    }
+
+    // 2. Direct client fallback
     const supabase = createClient();
     let query = supabase.from("parking_spaces").select("*");
     if (locationId) {
@@ -416,6 +435,29 @@ export const parkingService = {
   async createSpace(
     space: Database["public"]["Tables"]["parking_spaces"]["Insert"]
   ): Promise<ParkingSpace | null> {
+    // 1. In browser, route through Admin API to bypass RLS
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch("/api/parking/spaces", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(space),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.success && json.space) {
+            if (space.location_id) {
+              await this.syncLocationSpotCounts(space.location_id).catch(() => {});
+            }
+            return this.normalizeSpace(json.space);
+          }
+        }
+      } catch (apiErr) {
+        console.warn("[parkingService] Admin API createSpace warning:", apiErr);
+      }
+    }
+
+    // 2. Direct client fallback
     const supabase = createClient();
     let res = await supabase
       .from("parking_spaces")
@@ -592,6 +634,21 @@ export const parkingService = {
   },
 
   async deleteSpace(spaceId: string): Promise<void> {
+    // 1. In browser, route through Admin API to bypass RLS
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch(`/api/parking/spaces?id=${encodeURIComponent(spaceId)}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          return;
+        }
+      } catch (apiErr) {
+        console.warn("[parkingService] Admin API deleteSpace warning:", apiErr);
+      }
+    }
+
+    // 2. Direct client fallback
     const supabase = createClient();
     const { data: space } = await supabase
       .from("parking_spaces")

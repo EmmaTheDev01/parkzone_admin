@@ -5,6 +5,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { InboxIcon, SearchIcon, PlusIcon } from "@/components/icons";
 import { parkingService, ParkingFine, ParkingLocation } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
+import { TableSkeleton } from "@/components/Skeletons";
 
 export default function CitationsPage() {
   const [loading, setLoading] = useState(true);
@@ -240,8 +241,8 @@ export default function CitationsPage() {
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-neutral-400 text-xs">
-                      Loading citations from database...
+                    <td colSpan={8} className="p-0">
+                      <TableSkeleton rows={5} cols={8} />
                     </td>
                   </tr>
                 ) : filtered.length > 0 ? (

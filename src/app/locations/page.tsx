@@ -14,6 +14,7 @@ import {
 import { parkingService, ParkingLocation, ParkingSpace } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
 import { ImageInputControl } from "@/components/ImageInputControl";
+import { LocationListSkeleton, BayGridSkeleton } from "@/components/Skeletons";
 
 const ZONES = ["All Zones", "Zone A", "Zone B", "Zone C", "Zone D", "Zone E"] as const;
 
@@ -607,7 +608,9 @@ export default function LocationsPage() {
             </div>
 
             <div className="space-y-3">
-              {locations.length > 0 ? (
+              {loading && locations.length === 0 ? (
+                <LocationListSkeleton count={3} />
+              ) : locations.length > 0 ? (
                 locations.map((loc) => {
                   const isSelected = selectedLocation?.id === loc.id;
                   const occPercent =
@@ -941,9 +944,7 @@ export default function LocationsPage() {
 
               {/* Spaces Grid (Interactive Top-Down Visual Bay Rendering) */}
               {loading ? (
-                <div className="py-16 text-center text-xs text-neutral-400">
-                  Loading real-time bay telemetry...
-                </div>
+                <BayGridSkeleton count={8} />
               ) : filteredSpaces.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pt-4">
                   {filteredSpaces.map((space) => {

@@ -17,6 +17,7 @@ import {
 } from "@/components/icons";
 import { parkingService, ParkingLocation, ParkingTicket, WeeklyChartData } from "@/lib/services/parkingService";
 import { formatCurrency, formatNumberCompact } from "@/lib/utils/format";
+import { MetricsRowSkeleton, TableSkeleton, Skeleton } from "@/components/Skeletons";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -450,7 +451,10 @@ export default function Dashboard() {
         </div>
 
         {/* ────────────────── 2. 4 RE-ENGINEERED KPI CARDS ────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading ? (
+          <MetricsRowSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* KPI 1: Revenue */}
           <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] p-5 shadow-xs flex flex-col justify-between hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
             <div className="flex items-center justify-between">
@@ -558,6 +562,7 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+        )}
 
         {/* ────────────────── 3. REAL-TIME SESSIONS & FACILITY CAPACITY ────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -583,7 +588,25 @@ export default function Dashboard() {
               </div>
 
               <div className="divide-y divide-neutral-100 dark:divide-neutral-800/80 pt-2">
-                {recentTickets.length > 0 ? (
+                {loading ? (
+                  <div className="py-2 space-y-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="py-2 flex items-center justify-between text-xs gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Skeleton className="w-16 h-6 rounded" />
+                          <div className="space-y-1">
+                            <Skeleton className="w-28 h-3.5" />
+                            <Skeleton className="w-20 h-2.5" />
+                          </div>
+                        </div>
+                        <div className="space-y-1 text-right">
+                          <Skeleton className="w-14 h-3.5 ml-auto" />
+                          <Skeleton className="w-10 h-2.5 ml-auto" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recentTickets.length > 0 ? (
                   recentTickets.map((t: any) => {
                     const isActive = t.status === "active";
                     return (
@@ -658,7 +681,23 @@ export default function Dashboard() {
 
               {/* Progress bars list */}
               <div className="space-y-4 pt-4">
-                {facilities.length > 0 ? (
+                {loading ? (
+                  <div className="space-y-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <Skeleton className="w-32 h-3.5" />
+                          <Skeleton className="w-16 h-3.5" />
+                        </div>
+                        <Skeleton className="w-full h-2 rounded-full" />
+                        <div className="flex justify-between items-center">
+                          <Skeleton className="w-24 h-2.5" />
+                          <Skeleton className="w-14 h-2.5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : facilities.length > 0 ? (
                   facilities.map((fac) => {
                     const displayName =
                       fac.name.length > 22 ? `${fac.name.slice(0, 19)}...` : fac.name;

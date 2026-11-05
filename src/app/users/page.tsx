@@ -8,6 +8,7 @@ import {
   FilterIcon,
 } from "@/components/icons";
 import { ImageInputControl } from "@/components/ImageInputControl";
+import { TableSkeleton } from "@/components/Skeletons";
 import { parkingService, Profile } from "@/lib/services/parkingService";
 import { formatCurrency, formatNumberCompact } from "@/lib/utils/format";
 import { UserRole } from "@/types/database";
@@ -382,8 +383,8 @@ export default function UsersPage() {
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-neutral-400 text-xs">
-                      Loading user accounts from database...
+                    <td colSpan={7} className="p-0">
+                      <TableSkeleton rows={6} cols={7} />
                     </td>
                   </tr>
                 ) : filteredUsers.length > 0 ? (

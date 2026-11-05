@@ -5,6 +5,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { ChartsIcon, WalletIcon, ExpandIcon, MoreCircleIcon } from "@/components/icons";
 import { parkingService } from "@/lib/services/parkingService";
 import { formatCurrency, formatNumberCompact } from "@/lib/utils/format";
+import { MetricsRowSkeleton } from "@/components/Skeletons";
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<"Today" | "Week" | "Month" | "Year">("Today");
@@ -115,8 +116,11 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* 4 Summary KPI Cards with K, M, B, T formatting */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 4 Summary KPI Cards */}
+        {loading ? (
+          <MetricsRowSkeleton count={4} />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-[#151921] rounded-xl border border-[#e8ecf1] dark:border-[#202734] p-5 shadow-xs flex flex-col justify-between">
             <span className="text-xs font-semibold text-neutral-500">Gross Accrued Revenue</span>
             <div className="my-3">
@@ -181,6 +185,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* 2-Column Split: Facility Breakdown vs Fleet Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

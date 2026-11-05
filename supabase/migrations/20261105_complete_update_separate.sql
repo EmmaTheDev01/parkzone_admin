@@ -287,3 +287,4 @@ GRANT EXECUTE ON FUNCTION public.get_all_users_admin() TO anon, authenticated, s
 
 -- Reload schema cache
 NOTIFY pgrst, 'reload schema';
+

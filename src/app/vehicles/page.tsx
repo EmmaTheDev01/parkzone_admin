@@ -9,6 +9,7 @@ import {
 } from "@/components/icons";
 import { parkingService, Vehicle, Profile } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
+import { TableSkeleton } from "@/components/Skeletons";
 
 export default function VehiclesPage() {
   const [loading, setLoading] = useState(true);
@@ -289,8 +290,8 @@ export default function VehiclesPage() {
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-neutral-400 text-xs">
-                      Loading vehicle registry from database...
+                    <td colSpan={7} className="p-0">
+                      <TableSkeleton rows={5} cols={7} />
                     </td>
                   </tr>
                 ) : filteredVehicles.length > 0 ? (

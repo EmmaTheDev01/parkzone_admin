@@ -6,6 +6,7 @@ import { PlusIcon, TagsIcon, MoreCircleIcon } from "@/components/icons";
 import { ImageInputControl } from "@/components/ImageInputControl";
 import { parkingService, EVChargingPoint, EVChargingSession } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
+import { ChargerCardSkeleton, TableSkeleton } from "@/components/Skeletons";
 
 export default function EVStationsPage() {
   const [loading, setLoading] = useState(true);
@@ -261,9 +262,12 @@ export default function EVStationsPage() {
         </div>
 
         {/* Station Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {chargers.length > 0 ? (
-            chargers.map((st) => {
+        {loading ? (
+          <ChargerCardSkeleton count={3} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {chargers.length > 0 ? (
+              chargers.map((st) => {
               const isCharging = st.status === "charging";
               const isFaulted = st.status === "faulted" || st.operational_status === "faulted";
               const isOffline = st.status === "offline" || st.operational_status === "offline";
@@ -400,6 +404,7 @@ export default function EVStationsPage() {
             </div>
           )}
         </div>
+        )}
 
         {/* ── LIVE EV CHARGING SESSIONS TABLE ── */}
         <div className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] overflow-hidden shadow-xs">
@@ -432,7 +437,13 @@ export default function EVStationsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800/80">
-                {sessions.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="p-0">
+                      <TableSkeleton rows={4} cols={8} />
+                    </td>
+                  </tr>
+                ) : sessions.length > 0 ? (
                   sessions.map((sess) => {
                     const isActive = sess.status === "active";
                     return (

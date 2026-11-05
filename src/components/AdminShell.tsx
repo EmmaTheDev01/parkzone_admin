@@ -33,6 +33,7 @@ import {
 import { parkingService } from "@/lib/services/parkingService";
 import { useTheme } from "@/components/ThemeProvider";
 import { createClient } from "@/lib/supabase/client";
+import { AdminShellSkeleton } from "@/components/Skeletons";
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name && name.trim()) {
@@ -435,19 +436,7 @@ export function AdminShell({
   ];
 
   if (isAuthVerifying) {
-    return (
-      <div className="min-h-screen bg-[#0e0f11] flex flex-col items-center justify-center p-6 text-white font-sans">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 p-2.5 flex items-center justify-center animate-pulse">
-            <img src="/picon.png" alt="ParkZone" className="w-full h-full object-contain invert" />
-          </div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-neutral-400">
-            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-            <span>Verifying Admin Credentials...</span>
-          </div>
-        </div>
-      </div>
-    );
+    return <AdminShellSkeleton />;
   }
 
   return (

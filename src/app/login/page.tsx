@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useTheme } from "@/components/ThemeProvider";
 import { SunIcon, MoonIcon } from "@/components/icons";
+import { Skeleton } from "@/components/Skeletons";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -189,15 +190,36 @@ export default function LoginPage() {
 
   if (isVerifyingExistingSession) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#f4f5f8] dark:bg-[#0f1217] text-[#1c222b] dark:text-[#f3f4f6]">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white dark:bg-[#1a202c] border border-neutral-200 dark:border-neutral-700 p-2 flex items-center justify-center shadow-xs animate-pulse">
-            <img src="/picon.png" alt="ParkZone" className="w-full h-full object-contain dark:invert" />
+      <div className="min-h-screen w-full flex flex-col justify-between bg-[#f4f5f8] dark:bg-[#0f1217] text-[#1c222b] dark:text-[#f3f4f6]">
+        <header className="w-full px-6 py-4 flex items-center justify-between border-b border-[#e8ecf1] dark:border-[#202734] bg-white dark:bg-[#151921]">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-28" />
           </div>
-          <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
-            Checking saved session...
-          </p>
-        </div>
+          <Skeleton className="h-8 w-8 rounded-lg" />
+        </header>
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-[420px] bg-white dark:bg-[#151921] border border-[#e8ecf1] dark:border-[#202734] rounded-[16px] p-7 sm:p-8 space-y-5">
+            <Skeleton className="w-12 h-12 rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-3.5 w-64" />
+            </div>
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+              <div className="space-y-1.5">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-10 w-full rounded-xl" />
+              </div>
+              <Skeleton className="h-10 w-full rounded-xl mt-2" />
+            </div>
+          </div>
+        </main>
+        <footer className="py-4 text-center">
+          <Skeleton className="h-3 w-48 mx-auto" />
+        </footer>
       </div>
     );
   }
