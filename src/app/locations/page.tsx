@@ -9,6 +9,7 @@ import {
   SearchIcon,
   FilterIcon,
   MoreCircleIcon,
+  TrashIcon,
 } from "@/components/icons";
 import { parkingService, ParkingLocation, ParkingSpace } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
@@ -45,8 +46,18 @@ export default function LocationsPage() {
   const [showCreateLocationModal, setShowCreateLocationModal] = useState(false);
   const [showEditLocationModal, setShowEditLocationModal] = useState(false);
   const [showSpaceGeneratorModal, setShowSpaceGeneratorModal] = useState(false);
+  const [showAddLotModal, setShowAddLotModal] = useState(false);
   const [showBayControlModal, setShowBayControlModal] = useState(false);
   const [selectedBay, setSelectedBay] = useState<ParkingSpace | null>(null);
+
+  // Single Lot Provisioning State
+  const [newSpaceNumber, setNewSpaceNumber] = useState("");
+  const [newSpaceZone, setNewSpaceZone] = useState("Zone A");
+  const [newSpaceType, setNewSpaceType] = useState<"regular" | "ev" | "handicap" | "vip">("regular");
+  const [newSpaceFloor, setNewSpaceFloor] = useState("Floor 1");
+  const [newSpaceHourlyRate, setNewSpaceHourlyRate] = useState<number | "">("");
+  const [newSpaceImageUrl, setNewSpaceImageUrl] = useState<string | null>(null);
+  const [isSubmittingSpace, setIsSubmittingSpace] = useState(false);
 
   // New Location Form State
   const [newLocName, setNewLocName] = useState("");
@@ -392,16 +403,91 @@ export default function LocationsPage() {
     }
   };
 
-  // Delete Individual Bay
+  // Create Single Parking / EV Charging Lot
+  const handleCreateSingleSpace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedLocation || !newSpaceNumber.trim()) return;
+
+    setIsSubmittingSpace(true);
+    try {
+      const priceVal =
+        newSpaceHourlyRate === ""
+          ? (newSpaceType === "ev" ? 0 : selectedLocation.hourly_rate || 300)
+          : Number(newSpaceHourlyRate);
+
+      const created = await parkingService.createSpace({
+        location_id: selectedLocation.id,
+        space_number: newSpaceNumber.trim().toUpperCase(),
+        zone_code: newSpaceZone,
+        space_type: newSpaceType as any,
+        is_occupied: false,
+        price_per_hour_rwf: priceVal,
+        image_url: newSpaceImageUrl,
+        qr_code_token: `SPT-${selectedLocation.name.slice(0, 2).toUpperCase()}-${newSpaceNumber.trim().toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      } as any);
+
+      if (created) {
+        setSpaces((prev) => [...prev, created]);
+        const newTotal = (selectedLocation.total_spots || 0) + 1;
+        const newAvail = (selectedLocation.available_spots || 0) + 1;
+        const updatedLoc = { ...selectedLocation, total_spots: newTotal, available_spots: newAvail };
+        setSelectedLocation(updatedLoc);
+        setLocations((prev) => prev.map((l) => (l.id === updatedLoc.id ? updatedLoc : l)));
+      }
+
+      setNewSpaceNumber("");
+      setNewSpaceImageUrl(null);
+      setShowAddLotModal(false);
+    } catch (err) {
+      console.error("Failed creating space lot:", err);
+      alert("Failed creating lot: " + ((err as any)?.message || "Database error"));
+    } finally {
+      setIsSubmittingSpace(false);
+    }
+  };
+
+  // Quick Delete Space from Grid
+  const handleQuickDeleteBay = async (bay: ParkingSpace, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!confirm(`Are you sure you want to delete lot / bay ${bay.space_number}?`)) return;
+    try {
+      await parkingService.deleteSpace(bay.id);
+      setSpaces((prev) => prev.filter((s) => s.id !== bay.id));
+      if (selectedLocation) {
+        const newTotal = Math.max(0, (selectedLocation.total_spots || 1) - 1);
+        const newAvail = bay.is_occupied
+          ? (selectedLocation.available_spots || 0)
+          : Math.max(0, (selectedLocation.available_spots || 1) - 1);
+        const updated = { ...selectedLocation, total_spots: newTotal, available_spots: newAvail };
+        setSelectedLocation(updated);
+        setLocations((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+      }
+    } catch (err) {
+      console.error("Failed deleting lot:", err);
+      alert("Failed deleting lot: " + ((err as any)?.message || "Database error"));
+    }
+  };
+
+  // Delete Individual Bay from Control Modal
   const handleDeleteBay = async () => {
     if (!selectedBay) return;
-    if (!confirm(`Are you sure you want to delete bay ${selectedBay.space_number}?`)) return;
+    if (!confirm(`Are you sure you want to delete lot / bay ${selectedBay.space_number}?`)) return;
     try {
       await parkingService.deleteSpace(selectedBay.id);
-      setSpaces(spaces.filter((s) => s.id !== selectedBay.id));
+      setSpaces((prev) => prev.filter((s) => s.id !== selectedBay.id));
+      if (selectedLocation) {
+        const newTotal = Math.max(0, (selectedLocation.total_spots || 1) - 1);
+        const newAvail = selectedBay.is_occupied
+          ? (selectedLocation.available_spots || 0)
+          : Math.max(0, (selectedLocation.available_spots || 1) - 1);
+        const updated = { ...selectedLocation, total_spots: newTotal, available_spots: newAvail };
+        setSelectedLocation(updated);
+        setLocations((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+      }
       setShowBayControlModal(false);
     } catch (err) {
       console.error("Failed deleting bay:", err);
+      alert("Failed deleting bay: " + ((err as any)?.message || "Database error"));
     }
   };
 
@@ -471,18 +557,33 @@ export default function LocationsPage() {
 
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             {selectedLocation && (
-              <button
-                onClick={handleOpenEditLocation}
-                className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a202c] text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-xs whitespace-nowrap shrink-0"
-              >
-                Facility Settings
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    const nextNum = (spaces.length + 1).toString().padStart(2, "0");
+                    setNewSpaceNumber(`A-${nextNum}`);
+                    setNewSpaceHourlyRate(selectedLocation.hourly_rate || 300);
+                    setNewSpaceZone(availableZones[1] || "Zone A");
+                    setShowAddLotModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs font-semibold transition-colors shadow-xs flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                >
+                  <PlusIcon size={13} />
+                  <span>Add Lot / Bay</span>
+                </button>
+                <button
+                  onClick={handleOpenEditLocation}
+                  className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a202c] text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-xs whitespace-nowrap shrink-0"
+                >
+                  Facility Settings
+                </button>
+              </>
             )}
             <button
               onClick={() => setShowSpaceGeneratorModal(true)}
               className="px-3.5 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a202c] text-xs font-semibold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors shadow-xs whitespace-nowrap shrink-0"
             >
-              Bulk Bay Generator
+              Bulk Generator
             </button>
             <button
               onClick={() => setShowCreateLocationModal(true)}
@@ -916,22 +1017,32 @@ export default function LocationsPage() {
                           )}
                         </div>
 
-                        {/* Bottom Row: Quick Action Button */}
+                        {/* Bottom Row: Quick Action Button & Quick Delete */}
                         <div className="pt-2 border-t border-neutral-200/40 dark:border-neutral-800/60 flex items-center justify-between text-[10px]">
                           <span className="text-neutral-400 font-medium">
                             {space.zone_code}
                           </span>
-                          <button
-                            onClick={(e) => handleQuickToggleOccupancy(space, e)}
-                            className={`px-2 py-0.5 rounded font-bold transition-colors whitespace-nowrap shrink-0 ${
-                              isOccupied
-                                ? "bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
-                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                            }`}
-                            title={isOccupied ? "Vacate / Free Bay" : "Simulate Parked Car"}
-                          >
-                            {isOccupied ? "Vacate" : "+ Park"}
-                          </button>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={(e) => handleQuickDeleteBay(space, e)}
+                              className="p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors opacity-0 group-hover:opacity-100"
+                              title={`Delete lot ${space.space_number}`}
+                            >
+                              <TrashIcon size={13} />
+                            </button>
+                            <button
+                              onClick={(e) => handleQuickToggleOccupancy(space, e)}
+                              className={`px-2 py-0.5 rounded font-bold transition-colors whitespace-nowrap shrink-0 ${
+                                isOccupied
+                                  ? "bg-neutral-800 hover:bg-neutral-700 text-neutral-300"
+                                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                              }`}
+                              title={isOccupied ? "Vacate / Free Bay" : "Simulate Parked Car"}
+                            >
+                              {isOccupied ? "Vacate" : "+ Park"}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -1110,6 +1221,171 @@ export default function LocationsPage() {
                     Save Changes
                   </button>
                 </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────── MODAL: ADD PARKING OR CHARGING LOT ────────────────── */}
+      {showAddLotModal && selectedLocation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+              <div>
+                <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
+                  Add Parking Stall or Charging Lot
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Register a regular parking spot, EV rapid charger bay, or accessible stall.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddLotModal(false)}
+                className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center hover:text-black dark:hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateSingleSpace} className="space-y-4 text-xs">
+              {/* Target Location Banner */}
+              <div className="p-2.5 rounded-xl bg-neutral-50 dark:bg-[#181d26] border border-neutral-200/80 dark:border-neutral-800 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-neutral-400 block">Target Facility</span>
+                  <span className="font-bold text-neutral-800 dark:text-neutral-200 text-xs">{selectedLocation.name}</span>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                  {selectedLocation.layout_topology}
+                </span>
+              </div>
+
+              {/* Stall / Lot Identifier & Type */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                    Lot / Stall Identifier <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. A-12, EV-04, B-02"
+                    value={newSpaceNumber}
+                    onChange={(e) => setNewSpaceNumber(e.target.value)}
+                    className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs font-mono font-bold focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                    Lot Space Type
+                  </label>
+                  <select
+                    value={newSpaceType}
+                    onChange={(e) => {
+                      const t = e.target.value as any;
+                      setNewSpaceType(t);
+                      if (t === "ev") {
+                        setNewSpaceHourlyRate(0);
+                        if (!newSpaceNumber || newSpaceNumber.startsWith("A-")) {
+                          setNewSpaceNumber(`EV-${(spaces.filter((s) => s.space_type === "ev").length + 1).toString().padStart(2, "0")}`);
+                        }
+                      } else if (newSpaceHourlyRate === 0) {
+                        setNewSpaceHourlyRate(selectedLocation.hourly_rate || 300);
+                      }
+                    }}
+                    className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none"
+                  >
+                    <option value="regular">🚗 Standard Parking Stall</option>
+                    <option value="ev">⚡ EV Fast Charging Bay</option>
+                    <option value="handicap">♿ Accessible / Handicap Stall</option>
+                    <option value="vip">👑 VIP / Reserved Stall</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Zone & Floor */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                    Zone / Area
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Zone A, EV Fast Hub"
+                    value={newSpaceZone}
+                    onChange={(e) => setNewSpaceZone(e.target.value)}
+                    className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                    Floor Level
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Level 1, Basement B1"
+                    value={newSpaceFloor}
+                    onChange={(e) => setNewSpaceFloor(e.target.value)}
+                    className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Hourly Rate */}
+              <div>
+                <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                  Hourly Rate (RWF)
+                </label>
+                <input
+                  type="number"
+                  placeholder={`Default: ${newSpaceType === "ev" ? "0 (Free Parking for EV charging)" : (selectedLocation.hourly_rate || 300)}`}
+                  value={newSpaceHourlyRate}
+                  onChange={(e) => setNewSpaceHourlyRate(e.target.value === "" ? "" : Number(e.target.value))}
+                  className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                />
+                <p className="text-[10px] text-neutral-400 mt-1">
+                  Leave blank to inherit the facility rate ({selectedLocation.hourly_rate || 300} RWF/hr).
+                </p>
+              </div>
+
+              {/* Overhead Camera / Bay Photo */}
+              <div className="pt-1">
+                <ImageInputControl
+                  label="Lot Photograph / ANPR Sensor Camera"
+                  value={newSpaceImageUrl}
+                  onChange={setNewSpaceImageUrl}
+                  folder="spaces"
+                  bucket="parking-images"
+                  helperText="Upload a photo of this bay from your device or paste a direct image URL"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => setShowAddLotModal(false)}
+                  className="px-4 py-2 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingSpace}
+                  className="px-4 py-2 rounded-xl bg-[#212529] hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 font-semibold transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                >
+                  {isSubmittingSpace ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      <span>Creating Lot...</span>
+                    </>
+                  ) : (
+                    <span>Create Lot / Bay</span>
+                  )}
+                </button>
               </div>
             </form>
           </div>
