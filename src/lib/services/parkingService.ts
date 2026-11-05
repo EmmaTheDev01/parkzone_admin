@@ -1505,33 +1505,11 @@ export const parkingService = {
   },
 
   async updateUserStatus(userId: string, isActive: boolean): Promise<void> {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("profiles")
-      .update({ is_active: isActive, updated_at: new Date().toISOString() })
-      .eq("id", userId);
-
-    if (error) {
-      console.error("Error updating user status:", error.message);
-      throw error;
-    }
+    await this.updateUserProfile(userId, { is_active: isActive });
   },
 
   async updateUserWallet(userId: string, newBalanceRwf: number): Promise<void> {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("profiles")
-      .update({ wallet_balance_rwf: newBalanceRwf, updated_at: new Date().toISOString() })
-      .eq("id", userId);
-
-    if (error) {
-      if (isMissingTableOrColumnError(error)) {
-        console.info("wallet_balance_rwf column pending schema migration; update omitted.");
-        return;
-      }
-      console.error("Error updating user wallet:", error.message);
-      throw error;
-    }
+    await this.updateUserProfile(userId, { wallet_balance_rwf: newBalanceRwf });
   },
 
   async updateUserProfile(
@@ -1544,6 +1522,30 @@ export const parkingService = {
       full_name?: string;
     }
   ): Promise<void> {
+    // 1. In browser, use server-side Admin API route which has full service_role permissions
+    if (typeof window !== "undefined") {
+      try {
+        const res = await fetch("/api/admin/users", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, ...updates }),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.success) {
+            return;
+          }
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          console.warn("[parkingService] Admin API user update returned error, attempting direct client fallback:", errData);
+        }
+      } catch (apiErr) {
+        console.warn("[parkingService] Admin API user update failed, falling back to direct client:", apiErr);
+      }
+    }
+
+    // 2. Direct Supabase client fallback
     const supabase = createClient();
     const payload: any = {
       updated_at: new Date().toISOString(),

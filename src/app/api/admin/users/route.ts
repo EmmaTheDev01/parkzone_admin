@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/client";
 
@@ -135,6 +135,123 @@ export async function GET() {
         users: [],
         count: 0,
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { userId, role, is_active, wallet_balance_rwf, avatar_url, full_name } = body;
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Missing required parameter: userId" },
+        { status: 400 }
+      );
+    }
+
+    const hasServiceKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+    const client = hasServiceKey ? createAdminClient() : createClient();
+
+    // 1. Prepare profile updates
+    const profilePayload: any = {
+      updated_at: new Date().toISOString(),
+    };
+    if (role !== undefined) profilePayload.role = role;
+    if (is_active !== undefined) profilePayload.is_active = Boolean(is_active);
+    if (wallet_balance_rwf !== undefined) profilePayload.wallet_balance_rwf = Number(wallet_balance_rwf);
+    if (avatar_url !== undefined) profilePayload.avatar_url = avatar_url;
+    if (full_name !== undefined) profilePayload.full_name = full_name;
+
+    // Check if profile exists in public.profiles
+    const { data: existingProfile } = await (client as any)
+      .from("profiles")
+      .select("id, email, full_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (existingProfile) {
+      const { error: updateErr } = await (client as any)
+        .from("profiles")
+        .update(profilePayload)
+        .eq("id", userId);
+
+      if (updateErr) {
+        console.warn("[API /admin/users PATCH] Profile update warning:", updateErr.message);
+      }
+    } else {
+      // Upsert profile row with defaults
+      let userEmail = null;
+      let userName = full_name || "Registered User";
+
+      if (hasServiceKey) {
+        try {
+          const { data: authUser } = await (client as any).auth.admin.getUserById(userId);
+          if (authUser?.user) {
+            userEmail = authUser.user.email || null;
+            userName =
+              full_name ||
+              (authUser.user.user_metadata as any)?.full_name ||
+              (authUser.user.user_metadata as any)?.name ||
+              userName;
+          }
+        } catch (e) {
+          console.warn("[API /admin/users PATCH] auth user lookup error:", e);
+        }
+      }
+
+      await (client as any).from("profiles").upsert({
+        id: userId,
+        email: userEmail,
+        full_name: userName,
+        role: role || "driver",
+        is_active: is_active !== undefined ? Boolean(is_active) : true,
+        wallet_balance_rwf: wallet_balance_rwf !== undefined ? Number(wallet_balance_rwf) : 0,
+        avatar_url: avatar_url || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    // 2. If Service Role Key is present, sync with Supabase Auth admin
+    if (hasServiceKey) {
+      try {
+        const adminClient = createAdminClient();
+        const userMetaUpdates: any = {};
+        if (role !== undefined) userMetaUpdates.role = role;
+        if (full_name !== undefined) userMetaUpdates.full_name = full_name;
+        if (avatar_url !== undefined) userMetaUpdates.avatar_url = avatar_url;
+
+        const authPayload: any = {};
+        if (Object.keys(userMetaUpdates).length > 0) {
+          authPayload.user_metadata = userMetaUpdates;
+        }
+        if (is_active === false) {
+          authPayload.ban_duration = "876000h";
+        } else if (is_active === true) {
+          authPayload.ban_duration = "none";
+        }
+
+        if (Object.keys(authPayload).length > 0) {
+          await adminClient.auth.admin.updateUserById(userId, authPayload);
+        }
+      } catch (authErr) {
+        console.warn("[API /admin/users PATCH] auth.admin sync warning:", authErr);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "User updated successfully",
+      userId,
+      updates: profilePayload,
+    });
+  } catch (error: any) {
+    console.error("[API /admin/users PATCH] Error:", error);
+    return NextResponse.json(
+      { success: false, error: error?.message || "Failed to update user profile" },
       { status: 500 }
     );
   }

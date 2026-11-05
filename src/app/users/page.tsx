@@ -13,11 +13,19 @@ import { formatCurrency, formatNumberCompact } from "@/lib/utils/format";
 import { UserRole } from "@/types/database";
 
 const SQL_MIGRATION_SNIPPET = `-- Run this in Supabase SQL Editor:
--- 1. Allow reading profiles for admin console
+-- 1. Grant table privileges and allow reading & updating profiles
+GRANT ALL ON public.profiles TO authenticated, anon, service_role;
+
 DROP POLICY IF EXISTS "Allow reading profiles for admin console" ON public.profiles;
 CREATE POLICY "Allow reading profiles for admin console"
     ON public.profiles FOR SELECT
     USING (auth.role() IN ('authenticated', 'service_role', 'anon'));
+
+DROP POLICY IF EXISTS "Allow updating profiles for admin console" ON public.profiles;
+CREATE POLICY "Allow updating profiles for admin console"
+    ON public.profiles FOR UPDATE
+    USING (true)
+    WITH CHECK (true);
 
 -- 2. Backfill public.profiles for all auth.users
 INSERT INTO public.profiles (id, email, phone_number, full_name, role, wallet_balance_rwf, is_active, created_at, updated_at)

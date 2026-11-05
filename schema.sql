@@ -941,13 +941,21 @@ NOTIFY pgrst, 'reload schema';
 -- https://supabase.com/dashboard/project/jtemzkoydifrzdelxnkf/sql
 -- ==============================================================================
 
--- 1. Ensure public.profiles has RLS policy permitting admins and authenticated users to read all profiles
+-- 1. Ensure public.profiles has table grants and RLS policies permitting reading & updating profiles
+GRANT ALL ON public.profiles TO authenticated, anon, service_role;
+
 DROP POLICY IF EXISTS "Allow reading profiles for admin console" ON public.profiles;
 CREATE POLICY "Allow reading profiles for admin console"
     ON public.profiles FOR SELECT
     USING (
         auth.role() IN ('authenticated', 'service_role', 'anon')
     );
+
+DROP POLICY IF EXISTS "Allow updating profiles for admin console" ON public.profiles;
+CREATE POLICY "Allow updating profiles for admin console"
+    ON public.profiles FOR UPDATE
+    USING (true)
+    WITH CHECK (true);
 
 -- 2. Backfill public.profiles for all users already in auth.users
 INSERT INTO public.profiles (
