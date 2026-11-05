@@ -5,17 +5,6 @@ import Link from "next/link";
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [contactSubmitted, setContactSubmitted] = useState(false);
-  const [contactForm, setContactForm] = useState({ name: "", contact: "", message: "" });
-
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setContactSubmitted(true);
-    setTimeout(() => {
-      setContactSubmitted(false);
-      setContactForm({ name: "", contact: "", message: "" });
-    }, 4000);
-  };
 
   const faqs = [
     {
@@ -77,6 +66,9 @@ export default function LandingPage() {
             <a href="#faq" className="hover:text-black transition-colors">
               FAQ
             </a>
+            <Link href="/contact" className="hover:text-black transition-colors">
+              Support
+            </Link>
           </nav>
 
           {/* Download App Action (No Login/Signup buttons) */}
@@ -474,12 +466,12 @@ export default function LandingPage() {
                 Centralized corporate billing for delivery vans, logistics fleets, and company vehicles with consolidated VAT EBM v2 receipts.
               </p>
             </div>
-            <a
-              href="#contact"
+            <Link
+              href="/contact"
               className="text-xs font-bold text-neutral-900 hover:text-black underline underline-offset-4 decoration-neutral-300"
             >
               Contact dispatch →
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -616,76 +608,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 10. DIRECT DISPATCH INQUIRY FORM ────────────────── */}
-      <section id="contact" className="py-20 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100">
-        <div className="bg-[#FAFAFA] border border-neutral-200/80 rounded-[32px] p-8 sm:p-12">
-          <div className="max-w-xl">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              City Authority Support
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight mt-2">
-              Speak with Municipal Dispatch
-            </h2>
-            <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed font-normal">
-              Need assistance with corporate fleet accounts, bay reservations, or citation audits? Our dispatch desk responds 24/7.
-            </p>
-          </div>
-
-          <form onSubmit={handleContactSubmit} className="mt-8 space-y-4 max-w-xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">Your Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Christian Mugisha"
-                  value={contactForm.name}
-                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-neutral-200 text-xs text-neutral-900 focus:outline-none focus:border-black transition-colors"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-neutral-700 mb-1">Phone or Email</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="+250 788 000 000"
-                  value={contactForm.contact}
-                  onChange={(e) => setContactForm({ ...contactForm, contact: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-neutral-200 text-xs text-neutral-900 focus:outline-none focus:border-black transition-colors"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-neutral-700 mb-1">Inquiry or Citation Details</label>
-              <textarea
-                rows={3}
-                required
-                placeholder="Include vehicle plate or station name..."
-                value={contactForm.message}
-                onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-neutral-200 text-xs text-neutral-900 focus:outline-none focus:border-black transition-colors resize-none"
-              />
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <div className="text-[11px] text-neutral-400">
-                Direct phone: <strong className="text-neutral-700">+250 788 123 456</strong>
-              </div>
-              <button
-                type="submit"
-                disabled={contactSubmitted}
-                className="px-6 py-2.5 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-bold transition-all shadow-xs disabled:opacity-50"
-              >
-                {contactSubmitted ? "Message Dispatched ✓" : "Send Inquiry"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
-
-      {/* ────────────────── 11. MINIMALIST FOOTER (POPCORN STYLE - NO LOGIN/SIGNUP) ────────────────── */}
+      {/* ────────────────── 10. MINIMALIST FOOTER (POPCORN STYLE - NO LOGIN/SIGNUP) ────────────────── */}
       <footer className="border-t border-neutral-200 py-12 px-6 sm:px-10 text-xs text-neutral-500 max-w-6xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
@@ -709,6 +632,7 @@ export default function LandingPage() {
               <li><a href="#download" className="hover:text-black">Android Mobile App</a></li>
               <li><a href="#pricing" className="hover:text-black">Statutory Tariffs</a></li>
               <li><a href="#coverage" className="hover:text-black">Station Network</a></li>
+              <li><Link href="/contact" className="hover:text-black">Support &amp; Dispatch</Link></li>
             </ul>
           </div>
 
