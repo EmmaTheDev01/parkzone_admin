@@ -1,9 +1,31 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 export default function AnimatedGlobe({ className = "" }: { className?: string }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [size, setSize] = useState(340);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        // Calibrate globe size based on available width
+        if (containerWidth < 340) {
+          setSize(Math.max(260, containerWidth - 20));
+        } else if (containerWidth < 450) {
+          setSize(300);
+        } else {
+          setSize(360);
+        }
+      }
+    };
+
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -13,19 +35,17 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
     if (!ctx) return;
 
     let animId: number;
-    let width = (canvas.width = 380);
-    let height = (canvas.height = 380);
-    const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+    const dpr = typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
     ctx.scale(dpr, dpr);
 
-    const radius = 140;
-    const centerX = width / 2;
-    const centerY = height / 2;
+    const radius = size * 0.38;
+    const centerX = size / 2;
+    const centerY = size / 2;
 
     // Generate points on a sphere (Fibonacci sphere algorithm)
-    const numPoints = 650;
+    const numPoints = 620;
     const points: { x: number; y: number; z: number; isKigaliNode?: boolean }[] = [];
     const phi = Math.PI * (3 - Math.sqrt(5)); // Golden angle
 
@@ -52,7 +72,7 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
     let pingRadius = 0;
 
     const render = () => {
-      ctx.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, size, size);
 
       // Draw soft ambient globe atmosphere glow
       const glowGrad = ctx.createRadialGradient(
@@ -61,14 +81,14 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
         radius * 0.2,
         centerX,
         centerY,
-        radius * 1.2
+        radius * 1.25
       );
-      glowGrad.addColorStop(0, "rgba(225, 240, 255, 0.5)");
-      glowGrad.addColorStop(0.6, "rgba(215, 235, 250, 0.25)");
+      glowGrad.addColorStop(0, "rgba(225, 240, 255, 0.45)");
+      glowGrad.addColorStop(0.6, "rgba(215, 235, 250, 0.2)");
       glowGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
       ctx.fillStyle = glowGrad;
       ctx.beginPath();
-      ctx.arc(centerX, centerY, radius * 1.2, 0, Math.PI * 2);
+      ctx.arc(centerX, centerY, radius * 1.25, 0, Math.PI * 2);
       ctx.fill();
 
       // Soft sphere backplate
@@ -80,9 +100,9 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
         centerY,
         radius
       );
-      sphereGrad.addColorStop(0, "rgba(245, 249, 253, 0.95)");
-      sphereGrad.addColorStop(0.7, "rgba(230, 240, 250, 0.7)");
-      sphereGrad.addColorStop(1, "rgba(210, 228, 245, 0.4)");
+      sphereGrad.addColorStop(0, "rgba(248, 250, 253, 0.98)");
+      sphereGrad.addColorStop(0.7, "rgba(235, 243, 250, 0.7)");
+      sphereGrad.addColorStop(1, "rgba(210, 228, 245, 0.35)");
 
       ctx.fillStyle = sphereGrad;
       ctx.beginPath();
@@ -90,7 +110,7 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
       ctx.fill();
 
       // Delicate outer rim border
-      ctx.strokeStyle = "rgba(180, 205, 230, 0.5)";
+      ctx.strokeStyle = "rgba(180, 205, 230, 0.45)";
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
@@ -102,9 +122,8 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
       const cos = Math.cos(rotationAngle);
       const sin = Math.sin(rotationAngle);
 
-      // Project and draw points
+      // Project points
       const projected = points.map((p) => {
-        // Rotate around Y axis
         const rotX = p.x * cos - p.z * sin;
         const rotZ = p.x * sin + p.z * cos;
         return {
@@ -119,12 +138,11 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
       projected.sort((a, b) => a.z - b.z);
 
       for (const p of projected) {
-        // Only draw points on visible front hemisphere and slight edge back
-        const depth = (p.z + radius) / (2 * radius); // 0 (far back) to 1 (closest front)
-        if (p.z < -20) continue; // cull far back for clean pop look
+        const depth = (p.z + radius) / (2 * radius);
+        if (p.z < -20) continue;
 
         const alpha = Math.max(0.08, Math.min(1, depth * depth));
-        const pointSize = Math.max(0.8, 1.8 * depth);
+        const pointSize = Math.max(0.7, 1.8 * depth);
 
         if (p.isKigaliNode && p.z > 20) {
           // Special Kigali telemetry station ping
@@ -156,27 +174,33 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
     return () => {
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [size]);
 
   return (
-    <div className={`relative flex items-center justify-center ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative flex flex-col items-center justify-center w-full max-w-[400px] mx-auto ${className}`}
+    >
       {/* Subtle pulse ambient behind */}
-      <div className="absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full bg-emerald-100/30 filter blur-2xl pointer-events-none" />
+      <div
+        style={{ width: `${size * 0.85}px`, height: `${size * 0.85}px` }}
+        className="absolute rounded-full bg-emerald-100/30 filter blur-2xl pointer-events-none"
+      />
 
       {/* 3D Canvas */}
       <canvas
         ref={canvasRef}
-        style={{ width: "380px", height: "380px" }}
-        className="w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] select-none"
+        style={{ width: `${size}px`, height: `${size}px` }}
+        className="select-none transition-all duration-300"
       />
 
       {/* Floating Kigali Grid Badge in Front Center */}
-      <div className="absolute bottom-4 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-neutral-200/90 shadow-md flex items-center gap-2 text-xs font-bold text-neutral-900 pointer-events-none z-20">
+      <div className="absolute -bottom-2 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-neutral-200/90 shadow-md flex items-center gap-2 text-xs font-bold text-neutral-900 pointer-events-none z-20">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/picon.png" alt="ParkZone" className="w-4 h-4 rounded-full object-contain" />
-        <span className="font-extrabold">ParkZone</span>
+        <span className="font-extrabold tracking-tight">ParkZone</span>
         <span className="text-neutral-300">·</span>
-        <span className="text-emerald-600 flex items-center gap-1 font-semibold text-[11px]">
+        <span className="text-emerald-600 flex items-center gap-1.5 font-semibold text-[11px]">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Kigali Grid Live
         </span>

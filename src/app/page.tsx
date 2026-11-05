@@ -6,6 +6,7 @@ import AnimatedGlobe from "@/components/AnimatedGlobe";
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const faqs = [
     {
@@ -35,23 +36,23 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#111111] font-sans antialiased selection:bg-neutral-900 selection:text-white">
-      {/* ────────────────── 1. NAVBAR (POPCORN CLEAN ARCHITECTURE - NO LOGIN/SIGNUP) ────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-neutral-100 px-6 sm:px-10 py-4 transition-all">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          {/* Logo using real ParkZone image asset */}
+    <div className="min-h-screen bg-[#FFFFFF] text-[#111111] font-sans antialiased selection:bg-neutral-900 selection:text-white flex flex-col justify-between overflow-x-hidden">
+      {/* ────────────────── 1. NAVBAR (RESPONSIVE WITH MOBILE DRAWER) ────────────────── */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-neutral-100 transition-all">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between">
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
               alt="ParkZone"
-              className="h-8 w-auto object-contain transition-opacity group-hover:opacity-80"
+              className="h-7 sm:h-8 w-auto object-contain transition-opacity group-hover:opacity-85"
             />
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-tight text-neutral-600">
+          <nav className="hidden md:flex items-center gap-7 lg:gap-8 text-xs sm:text-sm font-semibold tracking-tight text-neutral-600">
             <a href="#features" className="hover:text-black transition-colors">
               Features
             </a>
@@ -72,42 +73,115 @@ export default function LandingPage() {
             </Link>
           </nav>
 
-          {/* Download App Action (No Login/Signup buttons) */}
+          {/* Actions & Mobile Hamburger */}
           <div className="flex items-center gap-3">
             <a
               href="#download"
-              className="px-5 py-2 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-semibold tracking-tight transition-all shadow-xs hover:scale-105 active:scale-95 flex items-center gap-1.5"
+              className="hidden sm:inline-flex px-5 py-2 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-semibold tracking-tight transition-all shadow-xs hover:scale-105 active:scale-95"
             >
-              <span>Download App</span>
+              Download App
             </a>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl text-neutral-700 hover:text-black hover:bg-neutral-100 transition-colors"
+              aria-label="Toggle navigation menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Drawer */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-neutral-100 bg-white px-6 py-4 space-y-3 shadow-lg">
+            <a
+              href="#features"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-neutral-800 hover:text-black"
+            >
+              Features
+            </a>
+            <a
+              href="#coverage"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-neutral-800 hover:text-black"
+            >
+              Coverage
+            </a>
+            <a
+              href="#dispatch"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-neutral-800 hover:text-black"
+            >
+              Dispatch
+            </a>
+            <a
+              href="#pricing"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-neutral-800 hover:text-black"
+            >
+              Pricing
+            </a>
+            <a
+              href="#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-neutral-800 hover:text-black"
+            >
+              FAQ
+            </a>
+            <Link
+              href="/contact"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+            >
+              Support Desk
+            </Link>
+            <div className="pt-2">
+              <a
+                href="#download"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full text-center block px-5 py-2.5 rounded-full bg-black text-white text-xs font-bold"
+              >
+                Download on iOS &amp; Android
+              </a>
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* ────────────────── 2. HERO SECTION (APP STORE & PLAY STORE BUTTONS + RAW PNG PHONES) ────────────────── */}
-      <section className="pt-16 sm:pt-24 pb-16 sm:pb-24 px-6 sm:px-10 max-w-6xl mx-auto">
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-5">
+      {/* ────────────────── 2. HERO SECTION ────────────────── */}
+      <section className="pt-14 sm:pt-20 md:pt-24 pb-14 sm:pb-20 px-4 sm:px-8 max-w-6xl mx-auto w-full">
+        <div className="flex flex-col items-center text-center max-w-3xl mx-auto gap-4 sm:gap-5">
           {/* Announcement Badge */}
-          <div className="inline-flex items-center justify-center rounded-full border border-neutral-200/90 px-4 py-1.5 text-xs font-semibold tracking-tight text-neutral-800 bg-neutral-50/80 shadow-2xs hover:opacity-80 transition-opacity">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2" />
-            <span>City of Kigali Smart Mobility Network</span>
-            <span className="mx-2 text-neutral-300">·</span>
-            <span className="text-emerald-700 font-bold">15m Free Grace Period</span>
+          <div className="inline-flex items-center justify-center rounded-full border border-neutral-200/90 px-3.5 sm:px-4 py-1.5 text-[11px] sm:text-xs font-semibold tracking-tight text-neutral-800 bg-neutral-50/80 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2 shrink-0" />
+            <span className="truncate">City of Kigali Smart Mobility Network</span>
+            <span className="mx-1.5 text-neutral-300">·</span>
+            <span className="text-emerald-700 font-bold shrink-0">15m Free Grace Period</span>
           </div>
 
-          {/* Big Confident Headline */}
-          <h1 className="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight text-neutral-900 leading-[1.03]">
+          {/* Headline */}
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-neutral-900 leading-[1.04] sm:leading-[1.02]">
             One parking network. <br />
             No hassle.
           </h1>
 
           {/* Subtitle */}
-          <p className="max-w-xl text-base sm:text-lg font-medium leading-snug tracking-tight text-neutral-500">
+          <p className="max-w-xl text-sm sm:text-base md:text-lg font-medium leading-relaxed tracking-tight text-neutral-500 px-2">
             Enjoy unlimited municipal mobility in Kigali for 300 RWF/hr. 2,000 RWF daily cap, zero surprise fines, or headaches.
           </p>
 
           {/* Checklist */}
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-2 text-xs sm:text-sm font-semibold text-neutral-800">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-1 text-xs sm:text-sm font-semibold text-neutral-800">
             <div className="flex items-center gap-1.5">
               <span className="text-emerald-600 font-bold">✓</span>
               <span>15m free grace period</span>
@@ -126,16 +200,16 @@ export default function LandingPage() {
             *Subject to City of Kigali municipal mobility bylaws
           </div>
 
-          {/* Hero Download Badges: App Store & Google Play */}
+          {/* Official App Store & Google Play Badges */}
           <div id="download" className="flex flex-wrap items-center justify-center gap-3 pt-3">
             {/* Apple App Store */}
             <a
               href="https://apps.apple.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black hover:bg-neutral-800 text-white transition-all shadow-md hover:scale-105 active:scale-95"
+              className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black hover:bg-neutral-800 text-white transition-all shadow-md hover:scale-105 active:scale-95 min-h-[48px]"
             >
-              <svg className="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24">
+              <svg className="w-5 sm:w-6 h-5 sm:h-6 fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.67-.82 1.13-1.96 1-3.1-.98.04-2.17.65-2.87 1.47-.62.72-1.16 1.88-1.01 2.99 1.1.08 2.21-.54 2.88-1.36z" />
               </svg>
               <div className="text-left">
@@ -153,7 +227,7 @@ export default function LandingPage() {
               href="https://play.google.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black hover:bg-neutral-800 text-white transition-all shadow-md hover:scale-105 active:scale-95"
+              className="flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-black hover:bg-neutral-800 text-white transition-all shadow-md hover:scale-105 active:scale-95 min-h-[48px]"
             >
               <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M3.609 1.814L13.793 12 3.61 22.186a1.99 1.99 0 0 1-.61-1.423V3.237c0-.54.22-1.03.609-1.423zm11.238 11.24l2.58 2.58-12.35 7.126 9.77-9.706zm0-2.108L5.077 1.24l12.35 7.126-2.58 2.58zm1.054 1.054l3.19-1.84a1.8 1.8 0 0 1 0 3.12l-3.19-1.28z" />
@@ -170,103 +244,102 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ────────────────── RAW PNG HERO IMAGES (NO BORDERS, NO ARTIFICIAL BACKGROUNDS) ────────────────── */}
-        <div className="relative mt-16 sm:mt-20 flex w-full max-w-4xl mx-auto items-center justify-center">
-          {/* Subtle ambient blur behind images */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 w-[70%] h-[70%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-tr from-emerald-100/40 to-neutral-100/50 rounded-full filter blur-3xl -z-10" />
+        {/* ────────────────── RAW PNG HERO IMAGES ────────────────── */}
+        <div className="relative mt-12 sm:mt-16 md:mt-20 flex w-full max-w-3xl sm:max-w-4xl mx-auto items-center justify-center">
+          {/* Ambient soft backlight */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 w-[80%] h-[80%] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-tr from-emerald-100/30 via-transparent to-neutral-100/40 rounded-full filter blur-3xl -z-10" />
 
-          {/* Left PNG Image (Slightly tilted left, no borders/bgs) */}
-          <div className="relative w-[48%] sm:w-[320px] -rotate-3 hover:rotate-0 transition-transform duration-300 select-none z-10 -mr-6 sm:-mr-10">
+          {/* Left PNG Image */}
+          <div className="relative w-[48%] sm:w-[310px] md:w-[330px] -rotate-2 sm:-rotate-3 hover:rotate-0 transition-transform duration-300 select-none z-10 -mr-6 sm:-mr-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/screenshots/ev-map-navigation.png"
               alt="Live EV Navigation"
-              className="w-full h-auto drop-shadow-[0_25px_35px_rgba(0,0,0,0.18)]"
+              className="w-full h-auto drop-shadow-[0_20px_35px_rgba(0,0,0,0.18)]"
             />
           </div>
 
-          {/* Right PNG Image (Slightly tilted right, no borders/bgs) */}
-          <div className="relative w-[50%] sm:w-[335px] rotate-3 hover:rotate-0 transition-transform duration-300 select-none z-20">
+          {/* Right PNG Image */}
+          <div className="relative w-[50%] sm:w-[325px] md:w-[345px] rotate-2 sm:rotate-3 hover:rotate-0 transition-transform duration-300 select-none z-20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/screenshots/parking-spot-selection.png"
               alt="Spot Reservation"
-              className="w-full h-auto drop-shadow-[0_30px_45px_rgba(0,0,0,0.22)]"
+              className="w-full h-auto drop-shadow-[0_25px_45px_rgba(0,0,0,0.22)]"
             />
           </div>
         </div>
       </section>
 
       {/* ────────────────── 3. A KIGALI PLATE, WITH PEACE OF MIND ────────────────── */}
-      <section id="features" className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
-        <div className="max-w-2xl mb-14">
+      <section id="features" className="py-20 sm:py-24 px-4 sm:px-8 max-w-6xl mx-auto w-full border-t border-neutral-100">
+        <div className="max-w-2xl mb-12 sm:mb-14">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
             A Kigali plate, with peace of mind.
           </h2>
-          <p className="text-base text-neutral-500 mt-3 font-normal">
+          <p className="text-sm sm:text-base text-neutral-500 mt-2.5 font-normal">
             Get started in 5 minutes. Monitored parking across the entire capital.
           </p>
         </div>
 
-        {/* 3 Clean Bento Cards */}
+        {/* 3 Bento Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-8 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all hover:shadow-lg space-y-3">
+          <div className="p-7 sm:p-9 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all hover:shadow-lg space-y-3">
             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
               Simple
             </div>
             <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
               A city network without costly fines.
             </h3>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
               No paper tickets slipping between your seats, and no guessing if a stall is occupied. Live ultrasonic telemetry displays empty bays before you leave home.
             </p>
           </div>
 
-          <div className="p-8 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all hover:shadow-lg space-y-3">
+          <div className="p-7 sm:p-9 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all hover:shadow-lg space-y-3">
             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
               Fast &amp; Easy
             </div>
             <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
               Get parked in seconds. Keep your plate synced.
             </h3>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
               High-speed optical ANPR camera gates recognize your Rwandan registration plate instantly. Drive in and out with barriers lifting in 400 milliseconds.
             </p>
           </div>
 
-          <div className="p-8 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all hover:shadow-lg space-y-3">
+          <div className="p-7 sm:p-9 rounded-3xl bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all hover:shadow-lg space-y-3">
             <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
               Protected
             </div>
             <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
               Made for Kigali life. 2,000 RWF daily cap.
             </h3>
-            <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
               Whether you have back-to-back meetings in Nyarugenge or park overnight at Kigali Heights, fees automatically freeze at 2,000 RWF per day.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ────────────────── 4. WORKS AT KIGALI HEIGHTS. WORKS EVERYWHERE (IMAGE 2 CLONE - CENTRAL RADAR/GLOBE + 4 CALLOUTS) ────────────────── */}
-      <section id="coverage" className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
-        <div className="text-center max-w-2xl mx-auto mb-16">
+      {/* ────────────────── 4. WORKS AT KIGALI HEIGHTS. WORKS EVERYWHERE (WITH ANIMATED GLOBE) ────────────────── */}
+      <section id="coverage" className="py-20 sm:py-24 px-4 sm:px-8 max-w-6xl mx-auto w-full border-t border-neutral-100">
+        <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
             Works at Kigali Heights. <br />
             Works everywhere.
           </h2>
-          <p className="text-base text-neutral-500 mt-3 font-normal">
+          <p className="text-sm sm:text-base text-neutral-500 mt-3 font-normal">
             Experience premium municipal sensor coverage across Downtown, Nyarutarama, and 50+ facilities.
           </p>
         </div>
 
-        {/* Central Graphic with 4 Symmetrical Callouts (Popcorn.space Image 2 exact clone) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
-          {/* Left Column (2 Callouts) */}
-          <div className="lg:col-span-3 space-y-12 text-center lg:text-left order-2 lg:order-1">
-            {/* Callout 1 */}
+        {/* 4-Point Symmetrical Layout with Animated Globe */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center max-w-5xl mx-auto">
+          {/* Left Column */}
+          <div className="lg:col-span-3 space-y-8 sm:space-y-12 text-center lg:text-left order-2 lg:order-1">
             <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
                   <circle cx="12" cy="10" r="3" />
@@ -280,9 +353,8 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Callout 2 */}
             <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="2" y1="12" x2="22" y2="12" />
@@ -299,15 +371,14 @@ export default function LandingPage() {
           </div>
 
           {/* Center Column: 3D Animating Dotted Telemetry Globe */}
-          <div className="lg:col-span-6 flex justify-center items-center order-1 lg:order-2">
+          <div className="lg:col-span-6 flex justify-center items-center order-1 lg:order-2 py-4">
             <AnimatedGlobe />
           </div>
 
-          {/* Right Column (2 Callouts) */}
-          <div className="lg:col-span-3 space-y-12 text-center lg:text-left order-3">
-            {/* Callout 3 */}
+          {/* Right Column */}
+          <div className="lg:col-span-3 space-y-8 sm:space-y-12 text-center lg:text-left order-3">
             <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-emerald-600 shadow-2xs">
+              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-emerald-600 shadow-2xs">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
@@ -320,9 +391,8 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Callout 4 */}
             <div className="space-y-2">
-              <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
                   <line x1="12" y1="18" x2="12.01" y2="18" />
@@ -339,40 +409,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 5. THE BEST FEATURE? THE HUMANS (IMAGE 1 CLONE - REALISTIC CHAT THREAD) ────────────────── */}
-      <section id="dispatch" className="py-24 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100">
-        <div className="text-center max-w-xl mx-auto mb-14">
-          <h2 className="text-4xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
+      {/* ────────────────── 5. THE BEST FEATURE? THE HUMANS (CHAT THREAD) ────────────────── */}
+      <section id="dispatch" className="py-20 sm:py-24 px-4 sm:px-8 max-w-4xl mx-auto w-full border-t border-neutral-100">
+        <div className="text-center max-w-xl mx-auto mb-12 sm:mb-14">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
             The best feature? <br />
             The marshals.
           </h2>
-          <p className="text-base text-neutral-500 mt-3 font-normal leading-relaxed">
+          <p className="text-sm sm:text-base text-neutral-500 mt-2.5 font-normal leading-relaxed">
             Fast and reliable municipal dispatch. <br />
             Helping with bay allocation, EV charging, and a few laughs.
           </p>
         </div>
 
-        {/* Realistic Chat Bubbles Thread (Popcorn.space Image 1 exact clone) */}
+        {/* Chat Thread */}
         <div className="max-w-md mx-auto space-y-4">
-          {/* Message 1 (Driver: Aline) */}
+          {/* Message 1 */}
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
               AL
             </div>
-            <div className="flex-1 bg-neutral-100/90 rounded-2xl rounded-tl-sm p-4 border border-neutral-200/70 shadow-2xs">
+            <div className="flex-1 bg-neutral-100/90 rounded-2xl rounded-tl-sm p-3.5 sm:p-4 border border-neutral-200/70 shadow-2xs">
               <div className="flex items-center justify-between text-[11px] mb-1">
                 <span className="font-bold text-neutral-900">Aline</span>
                 <span className="text-neutral-400">14:15</span>
               </div>
-              <p className="text-xs text-neutral-700 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-700 leading-relaxed">
                 I&apos;m arriving at Kigali Heights underground, is the 60kW DC charger bay free?
               </p>
             </div>
           </div>
 
-          {/* Message 2 (Dispatch Lead: Eric) */}
+          {/* Message 2 */}
           <div className="flex items-start gap-3 justify-end">
-            <div className="flex-1 bg-white rounded-2xl rounded-tr-sm p-4 border border-neutral-200/90 shadow-sm max-w-sm text-left">
+            <div className="flex-1 bg-white rounded-2xl rounded-tr-sm p-3.5 sm:p-4 border border-neutral-200/90 shadow-sm max-w-sm text-left">
               <div className="flex items-center justify-between text-[11px] mb-1">
                 <span className="font-bold text-neutral-900 flex items-center gap-1.5">
                   Eric, Dispatch Lead
@@ -380,26 +450,26 @@ export default function LandingPage() {
                 </span>
                 <span className="text-neutral-400">14:16</span>
               </div>
-              <p className="text-xs text-neutral-800 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-800 leading-relaxed">
                 Bay EV-02 is clear and reserved for your plate RAD 892 B! Barrier will lift automatically.
               </p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
               ER
             </div>
           </div>
 
-          {/* Message 3 (Driver: Aline) */}
+          {/* Message 3 */}
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-full bg-neutral-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
               AL
             </div>
-            <div className="flex-1 bg-neutral-100/90 rounded-2xl rounded-tl-sm p-4 border border-neutral-200/70 shadow-2xs">
+            <div className="flex-1 bg-neutral-100/90 rounded-2xl rounded-tl-sm p-3.5 sm:p-4 border border-neutral-200/70 shadow-2xs">
               <div className="flex items-center justify-between text-[11px] mb-1">
                 <span className="font-bold text-neutral-900">Aline</span>
                 <span className="text-neutral-400">14:17</span>
               </div>
-              <p className="text-xs text-neutral-700 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-700 leading-relaxed">
                 Barrier lifted in 0.4s, amazing five stars
               </p>
             </div>
@@ -408,16 +478,16 @@ export default function LandingPage() {
       </section>
 
       {/* ────────────────── 6. ONE PLAN THAT DOES IT ALL (TWO CARDS) ────────────────── */}
-      <section className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
-        <div className="max-w-2xl mb-14">
+      <section className="py-20 sm:py-24 px-4 sm:px-8 max-w-6xl mx-auto w-full border-t border-neutral-100">
+        <div className="max-w-2xl mb-12 sm:mb-14">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
             One network that does it all.
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {/* Card 1: Municipal */}
-          <div className="p-8 sm:p-10 rounded-[36px] bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all flex flex-col justify-between space-y-8">
+          <div className="p-7 sm:p-10 rounded-[32px] sm:rounded-[36px] bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <span className="text-xs font-bold text-neutral-500 uppercase tracking-wider">
                 Everyday Mobility
@@ -425,7 +495,7 @@ export default function LandingPage() {
               <h3 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">
                 Municipal
               </h3>
-              <p className="text-sm text-neutral-500 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
                 Standard transient parking across Kigali with automated 2,000 RWF daily caps, 15m free grace periods, and instant MoMo push checkout.
               </p>
             </div>
@@ -438,7 +508,7 @@ export default function LandingPage() {
           </div>
 
           {/* Card 2: Commercial Fleet */}
-          <div className="p-8 sm:p-10 rounded-[36px] bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all flex flex-col justify-between space-y-8">
+          <div className="p-7 sm:p-10 rounded-[32px] sm:rounded-[36px] bg-[#FAFAFA] border border-neutral-200/70 hover:border-black transition-all flex flex-col justify-between space-y-6">
             <div className="space-y-3">
               <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">
                 Corporate Fleet
@@ -446,7 +516,7 @@ export default function LandingPage() {
               <h3 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight">
                 Fleet Dispatch
               </h3>
-              <p className="text-sm text-neutral-500 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal">
                 Centralized corporate billing for delivery vans, logistics fleets, and company vehicles with consolidated VAT EBM v2 receipts.
               </p>
             </div>
@@ -461,51 +531,51 @@ export default function LandingPage() {
       </section>
 
       {/* ────────────────── 7. WHY DOES CITY PARKING FEEL STUCK IN THE 90S? (MANIFESTO) ────────────────── */}
-      <section id="manifesto" className="py-24 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100 text-center">
+      <section id="manifesto" className="py-20 sm:py-24 px-4 sm:px-8 max-w-4xl mx-auto w-full border-t border-neutral-100 text-center">
         <h2 className="text-3xl sm:text-5xl font-extrabold text-neutral-900 tracking-tight leading-tight">
           Why does city parking feel stuck in the 90s?
         </h2>
-        <p className="mt-6 text-base sm:text-lg text-neutral-600 leading-relaxed font-normal max-w-2xl mx-auto">
+        <p className="mt-6 text-sm sm:text-base md:text-lg text-neutral-600 leading-relaxed font-normal max-w-2xl mx-auto">
           Paper tickets getting crushed in your cup holder. Circling downtown for 20 minutes looking for an open bay. Waiting in line at a toll booth to find small change. Unfair 10,000 RWF citations from missing an attendant.
         </p>
-        <p className="mt-4 text-base sm:text-lg text-neutral-900 font-semibold max-w-xl mx-auto">
+        <p className="mt-4 text-sm sm:text-base md:text-lg text-neutral-900 font-bold max-w-xl mx-auto">
           We built ParkZone to eliminate all of it. Drive in, park, charge, and drive out.
         </p>
       </section>
 
-      {/* ────────────────── 8. DUAL OVERLAPPING CARDS + CENTER PHONE (IMAGE 3 EXACT CLONE) ────────────────── */}
-      <section id="pricing" className="py-24 px-6 sm:px-10 max-w-6xl mx-auto border-t border-neutral-100">
+      {/* ────────────────── 8. DUAL OVERLAPPING CARDS + CENTER PHONE ────────────────── */}
+      <section id="pricing" className="py-20 sm:py-24 px-4 sm:px-8 max-w-6xl mx-auto w-full border-t border-neutral-100">
         <div className="relative w-full max-w-5xl mx-auto">
-          {/* Dual Cards Container */}
+          {/* Dual Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-            {/* Left Card: Get parked in 5 minutes (Soft Gradient) */}
-            <div className="p-8 sm:p-12 rounded-[36px] bg-gradient-to-br from-neutral-50 via-emerald-50/20 to-neutral-100 border border-neutral-200/80 flex flex-col justify-between min-h-[380px]">
+            {/* Left Card: Get parked in 5 minutes */}
+            <div className="p-7 sm:p-12 rounded-[32px] sm:rounded-[36px] bg-gradient-to-br from-neutral-50 via-emerald-50/20 to-neutral-100 border border-neutral-200/80 flex flex-col justify-between min-h-[340px] sm:min-h-[380px]">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 tracking-tight leading-tight">
                   Get parked <br />
                   in 5 minutes.
                 </h3>
 
-                <div className="mt-8 space-y-4">
+                <div className="mt-6 sm:mt-8 space-y-3.5 sm:space-y-4">
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-white border border-neutral-300 text-xs font-bold text-neutral-800 flex items-center justify-center shrink-0 shadow-2xs">
                       1
                     </span>
-                    <span className="text-sm font-semibold text-neutral-800">Sign up plate</span>
+                    <span className="text-xs sm:text-sm font-semibold text-neutral-800">Sign up plate</span>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-white border border-neutral-300 text-xs font-bold text-neutral-800 flex items-center justify-center shrink-0 shadow-2xs">
                       2
                     </span>
-                    <span className="text-sm font-semibold text-neutral-800">Drive in &amp; park</span>
+                    <span className="text-xs sm:text-sm font-semibold text-neutral-800">Drive in &amp; park</span>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <span className="w-6 h-6 rounded-full bg-emerald-500 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-2xs">
                       3
                     </span>
-                    <span className="text-sm font-bold text-emerald-900">You&apos;re Cleared!</span>
+                    <span className="text-xs sm:text-sm font-bold text-emerald-900">You&apos;re Cleared!</span>
                   </div>
                 </div>
               </div>
@@ -517,8 +587,8 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Card: One plan, one price (Dark Ink) */}
-            <div className="p-8 sm:p-12 rounded-[36px] bg-[#121417] text-white border border-neutral-900 flex flex-col justify-between items-end text-right min-h-[380px] shadow-xl">
+            {/* Right Card: One plan, one price */}
+            <div className="p-7 sm:p-12 rounded-[32px] sm:rounded-[36px] bg-[#121417] text-white border border-neutral-900 flex flex-col justify-between items-end text-right min-h-[340px] sm:min-h-[380px] shadow-xl">
               <div>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
                   One plan, <br />
@@ -528,7 +598,7 @@ export default function LandingPage() {
 
               <div className="space-y-4 text-right">
                 <div>
-                  <div className="text-5xl sm:text-6xl font-black text-white tracking-tight leading-none">
+                  <div className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none">
                     2,000
                   </div>
                   <div className="text-xs sm:text-sm font-semibold text-neutral-400 mt-1">
@@ -538,15 +608,15 @@ export default function LandingPage() {
 
                 <a
                   href="#download"
-                  className="inline-block px-7 py-3 rounded-full bg-white text-neutral-900 hover:bg-neutral-100 text-xs font-bold tracking-tight transition-all shadow-md hover:scale-105 active:scale-95"
+                  className="inline-block px-6 sm:px-7 py-3 rounded-full bg-white text-neutral-900 hover:bg-neutral-100 text-xs font-bold tracking-tight transition-all shadow-md hover:scale-105 active:scale-95"
                 >
                   Download App
                 </a>
               </div>
             </div>
 
-            {/* Overlapping Center Phone Mockup (Popcorn.space Image 3 exact clone) */}
-            <div className="hidden md:block pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[240px] select-none">
+            {/* Overlapping Center Phone Mockup (Desktop) */}
+            <div className="hidden md:block pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[230px] lg:w-[250px] select-none">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/screenshots/parking-spot-selection.png"
@@ -559,8 +629,8 @@ export default function LandingPage() {
       </section>
 
       {/* ────────────────── 9. GOT QUESTIONS? HERE'S THE ANSWERS (FAQS) ────────────────── */}
-      <section id="faq" className="py-24 px-6 sm:px-10 max-w-4xl mx-auto border-t border-neutral-100">
-        <div className="mb-14">
+      <section id="faq" className="py-20 sm:py-24 px-4 sm:px-8 max-w-4xl mx-auto w-full border-t border-neutral-100">
+        <div className="mb-10 sm:mb-14">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-neutral-900 tracking-tight leading-tight">
             Got questions? Here&apos;s the answers.
           </h2>
@@ -570,11 +640,11 @@ export default function LandingPage() {
           {faqs.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
-              <div key={idx} className="py-6 transition-all">
+              <div key={idx} className="py-5 sm:py-6 transition-all">
                 <button
                   type="button"
                   onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full text-left flex items-center justify-between gap-4 font-bold text-base sm:text-lg text-neutral-900 hover:text-black"
+                  className="w-full text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base md:text-lg text-neutral-900 hover:text-black"
                 >
                   <span>{faq.q}</span>
                   <span className="text-xl font-light text-neutral-400 shrink-0">
@@ -592,10 +662,46 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ────────────────── 10. MINIMALIST FOOTER (POPCORN STYLE - NO LOGIN/SIGNUP) ────────────────── */}
-      <footer className="border-t border-neutral-200 py-12 px-6 sm:px-10 text-xs text-neutral-500 max-w-6xl mx-auto">
+      {/* ────────────────── 10. PRE-FOOTER DOWNLOAD CTA ────────────────── */}
+      <section className="py-16 sm:py-20 px-4 sm:px-8 max-w-5xl mx-auto w-full">
+        <div className="rounded-[32px] sm:rounded-[40px] bg-neutral-900 text-white p-8 sm:p-14 text-center relative overflow-hidden shadow-2xl">
+          <div className="max-w-2xl mx-auto relative z-10 space-y-4">
+            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+              Ready to experience effortless parking?
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight">
+              Download ParkZone today.
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed font-normal max-w-lg mx-auto">
+              Available across iOS and Android. Join thousands of Kigali drivers enjoying 0.4s optical barrier entry and guaranteed daily commuter caps.
+            </p>
+
+            <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="https://apps.apple.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 rounded-full bg-white hover:bg-neutral-100 text-neutral-900 text-xs sm:text-sm font-bold transition-all shadow-md hover:scale-105 active:scale-95"
+              >
+                Download on iOS
+              </a>
+              <a
+                href="https://play.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 rounded-full bg-neutral-800 hover:bg-neutral-700 text-white text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95"
+              >
+                Get on Android
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ────────────────── 11. MINIMALIST FOOTER ────────────────── */}
+      <footer className="border-t border-neutral-200 py-12 px-4 sm:px-8 text-xs text-neutral-500 max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <div className="mb-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
