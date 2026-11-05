@@ -3,184 +3,196 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
-export default function ContactPage() {
-  const [contactSubmitted, setContactSubmitted] = useState(false);
-  const [contactForm, setContactForm] = useState({ name: "", contact: "", message: "" });
+const inputCls =
+  "w-full rounded-xl bg-[#F7F7F6] px-4 py-3 text-[15px] text-neutral-900 placeholder:text-neutral-400 outline-none ring-1 ring-transparent focus:bg-white focus:ring-emerald-500/40 transition";
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+export default function ContactPage() {
+  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState({ name: "", contact: "", message: "" });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setContactSubmitted(true);
+    setSent(true);
     setTimeout(() => {
-      setContactSubmitted(false);
-      setContactForm({ name: "", contact: "", message: "" });
+      setSent(false);
+      setForm({ name: "", contact: "", message: "" });
     }, 5000);
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#111111] font-sans antialiased selection:bg-neutral-900 selection:text-white flex flex-col justify-between">
-      {/* ────────────────── HEADER (POPCORN CLEAN ARCHITECTURE) ────────────────── */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-neutral-100 px-6 sm:px-10 py-4 transition-all">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 group">
+    <div className="min-h-screen bg-[#F7F7F6] text-[#2B2A2A] font-sans antialiased selection:bg-emerald-200 flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between">
+          <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt="ParkZone"
-              className="h-8 w-auto object-contain transition-opacity group-hover:opacity-80"
-            />
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+            <img src="/logo.png" alt="ParkZone" className="h-7 sm:h-8 w-auto object-contain" />
           </Link>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-tight text-neutral-600">
-            <Link href="/#features" className="hover:text-black transition-colors">
-              Features
-            </Link>
-            <Link href="/#coverage" className="hover:text-black transition-colors">
-              Coverage
-            </Link>
-            <Link href="/#manifesto" className="hover:text-black transition-colors">
-              Manifesto
-            </Link>
-            <Link href="/#pricing" className="hover:text-black transition-colors">
-              Pricing
-            </Link>
-            <Link href="/#faq" className="hover:text-black transition-colors">
-              FAQ
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/#download"
-              className="px-5 py-2 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-semibold tracking-tight transition-all shadow-xs hover:scale-105 active:scale-95"
-            >
-              Download App
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900 transition-colors"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            Back home
+          </Link>
         </div>
       </header>
 
-      {/* ────────────────── MAIN CONTACT CONTENT ────────────────── */}
-      <main className="py-16 sm:py-24 px-6 sm:px-10 max-w-4xl mx-auto w-full">
-        <div className="bg-[#FAFAFA] border border-neutral-200/80 rounded-[36px] p-8 sm:p-14 shadow-xs">
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>City Authority Support</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 tracking-tight mt-3 leading-tight">
-              Speak with Municipal Dispatch
+      {/* Main */}
+      <main className="flex-1 px-5 sm:px-8 pt-10 sm:pt-16 pb-20">
+        <div className="max-w-[460px] mx-auto">
+          <div className="text-center pz-rise">
+            <span className="pz-pill inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-medium text-neutral-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-2" />
+              Dispatch online 24/7
+            </span>
+            <h1 className="mt-5 font-serif text-[40px] sm:text-[52px] leading-[1.05] tracking-[-0.015em]">
+              Talk to a
+              <br />
+              real human.
             </h1>
-
-            <p className="text-sm text-neutral-500 mt-2 leading-relaxed font-normal">
-              Need assistance with corporate fleet accounts, bay reservations, or citation audits? Our dispatch desk responds 24/7.
+            <p className="mt-4 text-[15px] text-neutral-500 leading-relaxed">
+              Fleet accounts, bay reservations, or citations.
+              <br className="hidden sm:block" /> We usually reply within 15 minutes.
             </p>
           </div>
 
-          <form onSubmit={handleContactSubmit} className="mt-10 space-y-5 max-w-2xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1.5">
-                  Your Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Christian Mugisha"
-                  value={contactForm.name}
-                  onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-2xl bg-white border border-neutral-200 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black transition-colors shadow-2xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-neutral-800 mb-1.5">
-                  Phone or Email
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="+250 788 000 000"
-                  value={contactForm.contact}
-                  onChange={(e) => setContactForm({ ...contactForm, contact: e.target.value })}
-                  className="w-full px-4 py-3 rounded-2xl bg-white border border-neutral-200 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black transition-colors shadow-2xs"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-neutral-800 mb-1.5">
-                Inquiry or Citation Details
-              </label>
-              <textarea
-                rows={4}
+          {/* Form card */}
+          <form
+            onSubmit={handleSubmit}
+            className="pz-rise mt-10 rounded-[24px] bg-white p-5 sm:p-7 shadow-[0_10px_40px_rgba(0,0,0,0.05)] space-y-3"
+            style={{ animationDelay: "120ms" }}
+          >
+            <label className="block">
+              <span className="sr-only">Full name</span>
+              <input
+                type="text"
                 required
-                placeholder="Include vehicle plate or station name..."
-                value={contactForm.message}
-                onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl bg-white border border-neutral-200 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-black transition-colors resize-none shadow-2xs leading-relaxed"
+                autoComplete="name"
+                placeholder="Full name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className={inputCls}
               />
-            </div>
+            </label>
+            <label className="block">
+              <span className="sr-only">Phone or email</span>
+              <input
+                type="text"
+                required
+                autoComplete="email"
+                placeholder="Phone or email"
+                value={form.contact}
+                onChange={(e) => setForm({ ...form, contact: e.target.value })}
+                className={inputCls}
+              />
+            </label>
+            <label className="block">
+              <span className="sr-only">Message</span>
+              <textarea
+                rows={5}
+                required
+                placeholder="How can we help? Include your plate or station."
+                value={form.message}
+                onChange={(e) => setForm({ ...form, message: e.target.value })}
+                className={`${inputCls} resize-none leading-relaxed`}
+              />
+            </label>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-neutral-200/60">
-              <div className="text-xs text-neutral-500 font-medium">
-                Direct phone: <strong className="text-neutral-900 font-bold">+250 788 123 456</strong>
-              </div>
-
-              <button
-                type="submit"
-                disabled={contactSubmitted}
-                className="px-7 py-3 rounded-full bg-black hover:bg-neutral-800 text-white text-xs font-bold tracking-tight transition-all shadow-md disabled:opacity-50 hover:scale-105 active:scale-95"
-              >
-                {contactSubmitted ? "Message Dispatched ✓" : "Send Inquiry"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={sent}
+              className="w-full mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-[#2B2A2A] hover:bg-black disabled:bg-emerald-600 text-white py-3 text-sm font-medium transition-all active:scale-[0.98]"
+            >
+              {sent ? (
+                <>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  Message sent
+                </>
+              ) : (
+                "Send message"
+              )}
+            </button>
           </form>
 
-          {/* Quick Contact Information Blocks */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 pt-8 border-t border-neutral-200/60 text-xs">
-            <div className="p-4 rounded-2xl bg-white border border-neutral-200/70">
-              <div className="font-bold text-neutral-900">24/7 Dispatch Hotline</div>
-              <div className="text-neutral-500 mt-0.5">+250 788 123 456</div>
-              <div className="text-[10px] text-emerald-600 font-semibold mt-1">Live Phone Operator</div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white border border-neutral-200/70">
-              <div className="font-bold text-neutral-900">Official Inquiries</div>
-              <div className="text-neutral-500 mt-0.5">dispatch@parkzone.rw</div>
-              <div className="text-[10px] text-neutral-400 font-semibold mt-1">Under 15 min response</div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-white border border-neutral-200/70">
-              <div className="font-bold text-neutral-900">Command Center</div>
-              <div className="text-neutral-500 mt-0.5">KN 3 Ave, Kigali</div>
-              <div className="text-[10px] text-neutral-400 font-semibold mt-1">City Mobility Hub</div>
-            </div>
+          {/* Direct contacts */}
+          <div className="pz-rise mt-4 rounded-[24px] bg-white divide-y divide-neutral-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)]" style={{ animationDelay: "200ms" }}>
+            {[
+              {
+                label: "Call dispatch",
+                value: "+250 788 123 456",
+                href: "tel:+250788123456",
+                icon: <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" />,
+              },
+              {
+                label: "Email",
+                value: "dispatch@parkzone.rw",
+                href: "mailto:dispatch@parkzone.rw",
+                icon: (
+                  <>
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 7l9 6 9-6" />
+                  </>
+                ),
+              },
+              {
+                label: "Visit",
+                value: "KN 3 Ave, Kigali",
+                href: undefined,
+                icon: (
+                  <>
+                    <path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z" />
+                    <circle cx="12" cy="9.5" r="2.5" />
+                  </>
+                ),
+              },
+            ].map((c) => {
+              const inner = (
+                <>
+                  <span className="w-9 h-9 rounded-full bg-[#F1F1F0] flex items-center justify-center text-neutral-700 shrink-0">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      {c.icon}
+                    </svg>
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[12px] text-neutral-400">{c.label}</span>
+                    <span className="block text-sm text-neutral-900 truncate">{c.value}</span>
+                  </span>
+                  {c.href && (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 text-neutral-300 group-hover:text-neutral-600 transition-colors" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <path d="M9 6l6 6-6 6" />
+                    </svg>
+                  )}
+                </>
+              );
+              return c.href ? (
+                <a key={c.label} href={c.href} className="group flex items-center gap-3 px-5 py-3.5 hover:bg-neutral-50/70 first:rounded-t-[24px] last:rounded-b-[24px] transition-colors">
+                  {inner}
+                </a>
+              ) : (
+                <div key={c.label} className="flex items-center gap-3 px-5 py-3.5">
+                  {inner}
+                </div>
+              );
+            })}
           </div>
         </div>
       </main>
 
-      {/* ────────────────── FOOTER ────────────────── */}
-      <footer className="border-t border-neutral-200 py-10 px-6 sm:px-10 text-xs text-neutral-500 max-w-6xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="ParkZone" className="h-5 w-auto object-contain" />
-            <span className="text-neutral-400">· City of Kigali Municipal Mobility Authority</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-[11px] text-neutral-400">
-            <span>© 2026 ParkZone Rwanda Ltd.</span>
-            <span>·</span>
-            <span className="text-emerald-600 font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              All Systems Operational
-            </span>
-          </div>
+      {/* Footer */}
+      <footer className="px-5 sm:px-8 pb-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-neutral-400">
+          <span>© 2026 ParkZone Rwanda Ltd.</span>
+          <span className="flex items-center gap-1.5 text-emerald-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            All systems operational
+          </span>
         </div>
       </footer>
     </div>
   );
 }
-
