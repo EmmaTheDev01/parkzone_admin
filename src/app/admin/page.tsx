@@ -16,6 +16,7 @@ import {
   ArrowRightIcon,
 } from "@/components/icons";
 import { parkingService, ParkingLocation, ParkingTicket, WeeklyChartData } from "@/lib/services/parkingService";
+import { createClient } from "@/lib/supabase/client";
 import { formatCurrency, formatNumberCompact } from "@/lib/utils/format";
 import { MetricsRowSkeleton, TableSkeleton, Skeleton } from "@/components/Skeletons";
 
@@ -34,6 +35,17 @@ export default function Dashboard() {
   >([]);
   const [locations, setLocations] = useState<ParkingLocation[]>([]);
   const [recentTickets, setRecentTickets] = useState<ParkingTicket[]>([]);
+  const [adminUser, setAdminUser] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    avatarUrl?: string | null;
+  }>({
+    name: "System Admin",
+    email: "admin@parkzone.rw",
+    role: "System Administrator",
+    avatarUrl: null,
+  });
 
   // Weekly Revenue Chart Data (100% Real DB Data)
   const [weeklyChart, setWeeklyChart] = useState<WeeklyChartData>({
@@ -78,6 +90,30 @@ export default function Dashboard() {
       setLocations(locs);
       setRecentTickets(tickets.slice(0, 6));
       setWeeklyChart(chartData);
+
+      // Fetch authentic logged in admin user
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+          const resolvedName =
+            prof?.full_name ||
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            (user.email
+              ? user.email.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())
+              : "System Administrator");
+          setAdminUser({
+            name: resolvedName,
+            email: prof?.email || user.email || "admin@parkzone.rw",
+            role: prof?.role === "admin" ? "System Administrator" : (prof?.role || "System Admin"),
+            avatarUrl: prof?.avatar_url || user.user_metadata?.avatar_url || null,
+          });
+        }
+      } catch (authErr) {
+        console.warn("Failed fetching admin profile:", authErr);
+      }
 
       if (locs.length > 0) {
         if (!newLocationId) setNewLocationId(locs[0].id);
@@ -244,18 +280,22 @@ export default function Dashboard() {
 
               {/* Admin Profile Chip */}
               <div className="flex items-center gap-3.5 p-3 rounded-xl bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200/80 dark:border-neutral-800/80">
-                <div className="w-12 h-12 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0 bg-white dark:bg-[#181d26] p-1 flex items-center justify-center shadow-xs">
-                  <img src="/picon.png" alt="ParkZone" className="w-full h-full object-contain dark:invert" />
+                <div className="w-12 h-12 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 shrink-0 bg-white dark:bg-[#181d26] p-0.5 flex items-center justify-center shadow-xs">
+                  {adminUser.avatarUrl ? (
+                    <img src={adminUser.avatarUrl} alt={adminUser.name} className="w-full h-full object-cover rounded-lg" />
+                  ) : (
+                    <img src="/picon.png" alt="ParkZone" className="w-full h-full object-contain dark:invert" />
+                  )}
                 </div>
                 <div className="overflow-hidden min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h3 className="font-bold text-sm text-neutral-900 dark:text-white truncate whitespace-nowrap">
-                      Municipal Administration
+                      {adminUser.name}
                     </h3>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Active Admin Session"></span>
                   </div>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate whitespace-nowrap">
-                    admin@parkzone.rw · Kigali City Authority
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate whitespace-nowrap" title={`${adminUser.email} · ${adminUser.role}`}>
+                    {adminUser.email} · {adminUser.role}
                   </p>
                 </div>
               </div>

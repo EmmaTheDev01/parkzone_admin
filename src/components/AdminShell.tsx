@@ -28,6 +28,7 @@ import {
   MoreCircleIcon,
   TrophyIcon,
   ArrowRightIcon,
+  FileManagerIcon,
 } from "./icons";
 
 import { parkingService } from "@/lib/services/parkingService";
@@ -427,6 +428,7 @@ export function AdminShell({
     { label: "Users & Drivers", href: "/users", icon: <UsersIcon size={16} /> },
     { label: "Citations & Arrears", href: "/citations", icon: <InboxIcon size={16} /> },
     { label: "Profits & Revenue", href: "/analytics", icon: <ChartsIcon size={16} /> },
+    { label: "System Health & Logs", href: "/system", icon: <FileManagerIcon size={16} /> },
   ];
 
   const appManagementLinks = [
@@ -440,9 +442,9 @@ export function AdminShell({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f6fa] dark:bg-[#0c0f14] text-[#2c3038] dark:text-[#e2e8f0] font-sans antialiased selection:bg-neutral-800 selection:text-white">
+    <div className="h-screen max-h-screen overflow-hidden flex flex-col bg-[#f5f6fa] dark:bg-[#0c0f14] text-[#2c3038] dark:text-[#e2e8f0] font-sans antialiased selection:bg-neutral-800 selection:text-white">
       {/* ────────────────── TOP NAVIGATION HEADER ────────────────── */}
-      <header className="sticky top-0 z-40 h-16 bg-white dark:bg-[#151921] border-b border-[#e9ecef] dark:border-[#202734] px-4 md:px-6 flex items-center justify-between transition-colors">
+      <header className="shrink-0 h-16 bg-white dark:bg-[#151921] border-b border-[#e9ecef] dark:border-[#202734] px-4 md:px-6 flex items-center justify-between transition-colors z-40">
         {/* Left: Brand & Select Zone */}
         <div className="flex items-center gap-6">
           <Link href="/admin" className="flex items-center gap-2.5 group">
@@ -650,7 +652,7 @@ export function AdminShell({
       </header>
 
       {/* ────────────────── SUB-HEADER / BREADCRUMB BAR ────────────────── */}
-      <div className="h-12 bg-white/60 dark:bg-[#151921]/60 backdrop-blur-md border-b border-[#e9ecef] dark:border-[#202734] px-4 md:px-6 flex items-center justify-between text-xs transition-colors">
+      <div className="shrink-0 h-12 bg-white/60 dark:bg-[#151921]/60 backdrop-blur-md border-b border-[#e9ecef] dark:border-[#202734] px-4 md:px-6 flex items-center justify-between text-xs transition-colors">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -703,13 +705,13 @@ export function AdminShell({
         </div>
       </div>
 
-      {/* ────────────────── MAIN BODY WITH SIDEBAR ────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar - ONLY APP DATA */}
+      {/* ────────────────── MAIN BODY WITH FIXED SIDEBAR ────────────────── */}
+      <div className="flex flex-1 overflow-hidden min-h-0">
+        {/* Left Sidebar - Fixed height, independently scrollable, never scrolls with page */}
         <aside
           className={`${
             sidebarCollapsed ? "w-16" : "w-60"
-          } shrink-0 bg-white dark:bg-[#151921] border-r border-[#e8ecf1] dark:border-[#202734] transition-all duration-200 flex flex-col justify-between py-4 select-none overflow-y-auto`}
+          } shrink-0 h-full bg-white dark:bg-[#151921] border-r border-[#e8ecf1] dark:border-[#202734] transition-all duration-200 flex flex-col justify-between py-4 select-none overflow-y-auto`}
         >
           <div className="space-y-6">
             <div>
@@ -767,8 +769,8 @@ export function AdminShell({
           </div>
         </aside>
 
-        {/* Center Main Column */}
-        <main className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-6">
+        {/* Center Main Column - Independent vertical scroll */}
+        <main className="flex-1 h-full overflow-y-auto px-4 md:px-6 py-6 space-y-6 min-h-0">
           {children}
 
           {/* Unified Standard Footer */}
@@ -792,9 +794,9 @@ export function AdminShell({
           </footer>
         </main>
 
-        {/* Right Sidebar Panel: Uniform with / */}
+        {/* Right Sidebar Panel: Independent vertical scroll */}
         {!hideRightSidebar && (
-          <aside className="w-80 shrink-0 bg-white dark:bg-[#151921] border-l border-[#e8ecf1] dark:border-[#202734] hidden xl:flex flex-col py-4 px-5 overflow-y-auto space-y-6">
+          <aside className="w-80 shrink-0 h-full bg-white dark:bg-[#151921] border-l border-[#e8ecf1] dark:border-[#202734] hidden xl:flex flex-col py-4 px-5 overflow-y-auto space-y-6">
             {/* Top Navigation Tabs */}
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-700/80 pb-2 text-xs font-semibold gap-1">
               {(["Today", "Wallet", "Tasks", "Emails"] as const).map((tab) => (
