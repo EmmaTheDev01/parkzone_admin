@@ -525,6 +525,8 @@ export default function EVStationsPage() {
                 label="EV Charger Photograph / Telemetry View"
                 value={editImageUrl}
                 onChange={setEditImageUrl}
+                folder="ev-stations"
+                bucket="parking-images"
                 helperText="Upload a photo from your device, direct web image URL, or pick a Kigali preset"
               />
 
@@ -645,6 +647,8 @@ export default function EVStationsPage() {
                 label="EV Charger Photograph"
                 value={newImageUrl}
                 onChange={setNewImageUrl}
+                folder="ev-stations"
+                bucket="parking-images"
                 helperText="Upload a photo of the station or pick a Kigali preset"
               />
 

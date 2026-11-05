@@ -88,7 +88,7 @@ export function AdminShell({
     avatarUrl: null,
   });
   const [shellUsers, setShellUsers] = useState<
-    { id: string; name: string; letter: string; bg: string }[]
+    { id: string; name: string; letter: string; bg: string; avatarUrl?: string | null }[]
   >([]);
   const [shellLocations, setShellLocations] = useState<
     { id: string; name: string; spots: number; available: number }[]
@@ -311,6 +311,7 @@ export function AdminShell({
               name: `${name} (${u.role || "driver"})`,
               letter: name.charAt(0).toUpperCase(),
               bg: bgs[i % bgs.length],
+              avatarUrl: u.avatar_url || null,
             };
           })
         );
@@ -787,9 +788,18 @@ export function AdminShell({
                     <div
                       key={user.id}
                       title={user.name}
-                      className={`w-9 h-9 rounded-full bg-gradient-to-tr ${user.bg} border-2 border-white dark:border-[#151921] flex items-center justify-center text-white text-[11px] font-bold shadow-xs hover:scale-110 hover:z-10 transition-transform cursor-pointer`}
+                      className={`w-9 h-9 rounded-full bg-gradient-to-tr ${user.bg} border-2 border-white dark:border-[#151921] flex items-center justify-center text-white text-[11px] font-bold shadow-xs hover:scale-110 hover:z-10 transition-transform cursor-pointer overflow-hidden`}
                     >
-                      {user.letter}
+                      {user.avatarUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        user.letter
+                      )}
                     </div>
                   ))
                 ) : (

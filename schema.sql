@@ -1025,3 +1025,39 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.get_all_users_admin() TO anon, authenticated, service_role;
+
+-- ------------------------------------------------------------------------------
+-- 15. STORAGE BUCKETS & POLICIES (Parking Facilities, EV Stations & User Profiles)
+-- ------------------------------------------------------------------------------
+
+-- Ensure storage buckets exist and are public for direct CDN access
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES 
+    ('parkzone-media', 'parkzone-media', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[]),
+    ('parking-images', 'parking-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[]),
+    ('avatars', 'avatars', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[])
+ON CONFLICT (id) DO UPDATE SET 
+    public = true,
+    file_size_limit = 5242880,
+    allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[];
+
+-- Storage Object Access Policies:
+DROP POLICY IF EXISTS "Public can view parkzone media objects" ON storage.objects;
+CREATE POLICY "Public can view parkzone media objects"
+    ON storage.objects FOR SELECT
+    USING (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));
+
+DROP POLICY IF EXISTS "Anyone or authenticated can upload parkzone media objects" ON storage.objects;
+CREATE POLICY "Anyone or authenticated can upload parkzone media objects"
+    ON storage.objects FOR INSERT
+    WITH CHECK (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));
+
+DROP POLICY IF EXISTS "Anyone or authenticated can update parkzone media objects" ON storage.objects;
+CREATE POLICY "Anyone or authenticated can update parkzone media objects"
+    ON storage.objects FOR UPDATE
+    USING (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));
+
+DROP POLICY IF EXISTS "Admins can delete parkzone media objects" ON storage.objects;
+CREATE POLICY "Admins can delete parkzone media objects"
+    ON storage.objects FOR DELETE
+    USING (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));

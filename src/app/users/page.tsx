@@ -7,6 +7,7 @@ import {
   SearchIcon,
   FilterIcon,
 } from "@/components/icons";
+import { ImageInputControl } from "@/components/ImageInputControl";
 import { parkingService, Profile } from "@/lib/services/parkingService";
 import { formatCurrency, formatNumberCompact } from "@/lib/utils/format";
 import { UserRole } from "@/types/database";
@@ -63,7 +64,25 @@ BEGIN
     ORDER BY COALESCE(p.created_at, u.created_at) DESC;
 END;
 $$;
-GRANT EXECUTE ON FUNCTION public.get_all_users_admin() TO anon, authenticated, service_role;`;
+GRANT EXECUTE ON FUNCTION public.get_all_users_admin() TO anon, authenticated, service_role;
+
+-- 4. Storage Buckets for Parking, EV Stations & Driver Avatars
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES 
+    ('parkzone-media', 'parkzone-media', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[]),
+    ('parking-images', 'parking-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[]),
+    ('avatars', 'avatars', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::TEXT[])
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Public can view parkzone media objects" ON storage.objects;
+CREATE POLICY "Public can view parkzone media objects"
+    ON storage.objects FOR SELECT
+    USING (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));
+
+DROP POLICY IF EXISTS "Anyone or authenticated can upload parkzone media objects" ON storage.objects;
+CREATE POLICY "Anyone or authenticated can upload parkzone media objects"
+    ON storage.objects FOR INSERT
+    WITH CHECK (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));`;
 
 export default function UsersPage() {
   const [loading, setLoading] = useState(true);
@@ -84,6 +103,7 @@ export default function UsersPage() {
   const [editRole, setEditRole] = useState<UserRole>("driver");
   const [editIsActive, setEditIsActive] = useState(true);
   const [editWalletRwf, setEditWalletRwf] = useState(0);
+  const [editAvatarUrl, setEditAvatarUrl] = useState<string | null>(null);
 
   // Real-time flash notice
   const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
@@ -140,6 +160,7 @@ export default function UsersPage() {
     setEditRole(user.role);
     setEditIsActive(user.is_active);
     setEditWalletRwf(user.wallet_balance_rwf || 0);
+    setEditAvatarUrl(user.avatar_url || null);
     setShowEditModal(true);
   };
 
@@ -147,14 +168,23 @@ export default function UsersPage() {
     e.preventDefault();
     if (!selectedUser) return;
     try {
-      await parkingService.updateUserRole(selectedUser.id, editRole);
-      await parkingService.updateUserStatus(selectedUser.id, editIsActive);
-      await parkingService.updateUserWallet(selectedUser.id, Number(editWalletRwf));
+      await parkingService.updateUserProfile(selectedUser.id, {
+        role: editRole,
+        is_active: editIsActive,
+        wallet_balance_rwf: Number(editWalletRwf),
+        avatar_url: editAvatarUrl,
+      });
 
       setUsers(
         users.map((u) =>
           u.id === selectedUser.id
-            ? { ...u, role: editRole, is_active: editIsActive, wallet_balance_rwf: Number(editWalletRwf) }
+            ? {
+                ...u,
+                role: editRole,
+                is_active: editIsActive,
+                wallet_balance_rwf: Number(editWalletRwf),
+                avatar_url: editAvatarUrl,
+              }
             : u
         )
       );
@@ -361,8 +391,17 @@ export default function UsersPage() {
                         {/* User Avatar + Name */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center font-bold text-xs text-neutral-700 dark:text-neutral-200 shrink-0">
-                              {initial}
+                            <div className="w-8 h-8 rounded-full overflow-hidden bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center font-bold text-xs text-neutral-700 dark:text-neutral-200 shrink-0 border border-neutral-300/80 dark:border-neutral-600">
+                              {u.avatar_url ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={u.avatar_url}
+                                  alt={displayName}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                initial
+                              )}
                             </div>
                             <div>
                               <div className="font-semibold text-neutral-900 dark:text-white truncate max-w-[170px] flex items-center gap-1.5">
@@ -591,14 +630,14 @@ export default function UsersPage() {
       {/* ────────────────── MODAL: USER ADMIN CONTROL ────────────────── */}
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
                   User Governance · {selectedUser.full_name || selectedUser.email || "Account"}
                 </h3>
                 <p className="text-xs text-neutral-400 mt-0.5">
-                  Update role authorization, account suspension, and wallet balance.
+                  Update profile avatar, role authorization, account suspension, and wallet balance.
                 </p>
               </div>
               <button
@@ -609,7 +648,34 @@ export default function UsersPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveUserEdits} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveUserEdits} className="space-y-3.5 text-xs">
+              {/* User Avatar Upload Control */}
+              <ImageInputControl
+                label="Profile Picture / Driver Avatar"
+                value={editAvatarUrl}
+                onChange={setEditAvatarUrl}
+                folder="avatars"
+                bucket="avatars"
+                helperText="Upload profile photo to the avatars bucket or pick from presets"
+                presets={[
+                  {
+                    label: "Driver Professional",
+                    url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80",
+                    category: "Profile",
+                  },
+                  {
+                    label: "Executive Commuter",
+                    url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80",
+                    category: "Executive",
+                  },
+                  {
+                    label: "Fleet Marshal",
+                    url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&auto=format&fit=crop&q=80",
+                    category: "Operator",
+                  },
+                ]}
+              />
+
               <div>
                 <label className="block font-semibold mb-1">System Role Authorization</label>
                 <select

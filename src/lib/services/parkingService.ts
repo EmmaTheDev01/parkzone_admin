@@ -1534,6 +1534,41 @@ export const parkingService = {
     }
   },
 
+  async updateUserProfile(
+    userId: string,
+    updates: {
+      role?: UserRole;
+      is_active?: boolean;
+      wallet_balance_rwf?: number;
+      avatar_url?: string | null;
+      full_name?: string;
+    }
+  ): Promise<void> {
+    const supabase = createClient();
+    const payload: any = {
+      updated_at: new Date().toISOString(),
+    };
+    if (updates.role !== undefined) payload.role = updates.role;
+    if (updates.is_active !== undefined) payload.is_active = updates.is_active;
+    if (updates.wallet_balance_rwf !== undefined) payload.wallet_balance_rwf = updates.wallet_balance_rwf;
+    if (updates.avatar_url !== undefined) payload.avatar_url = updates.avatar_url;
+    if (updates.full_name !== undefined) payload.full_name = updates.full_name;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update(payload)
+      .eq("id", userId);
+
+    if (error) {
+      if (isMissingTableOrColumnError(error)) {
+        console.warn("Some columns in profiles pending schema migration; update omitted:", error.message);
+        return;
+      }
+      console.error("Error updating user profile:", error.message);
+      throw error;
+    }
+  },
+
   // ── ALL TICKETS / SESSIONS ──
   async getTickets(): Promise<ParkingTicket[]> {
     const supabase = createClient();

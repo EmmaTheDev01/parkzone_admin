@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
+import { storageService, UploadOptions } from "@/lib/services/storageService";
 
 interface PresetImage {
   label: string;
@@ -14,6 +15,8 @@ interface ImageInputControlProps {
   onChange: (url: string | null) => void;
   presets?: PresetImage[];
   helperText?: string;
+  folder?: UploadOptions["folder"];
+  bucket?: UploadOptions["bucket"];
 }
 
 const DEFAULT_PRESETS: PresetImage[] = [
@@ -55,10 +58,14 @@ export function ImageInputControl({
   onChange,
   presets = DEFAULT_PRESETS,
   helperText = "Upload a photo from your device, choose from presets, or paste an external image URL.",
+  folder = "locations",
+  bucket = "parkzone-media",
 }: ImageInputControlProps) {
   const [urlInput, setUrlInput] = useState(value || "");
   const [isUrlMode, setIsUrlMode] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Synchronize internal urlInput if parent value changes
@@ -66,8 +73,9 @@ export function ImageInputControl({
     setUrlInput(value || "");
   }, [value]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrorMsg(null);
+    setUploadNotice(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -76,52 +84,84 @@ export function ImageInputControl({
       return;
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      setErrorMsg("Image size exceeds 8MB. Please choose a smaller image.");
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMsg("Image size exceeds 10MB. Please choose a smaller image.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        // Compress large client images via canvas to ensure smooth DB storage
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const maxDim = 1200;
-          let width = img.width;
-          let height = img.height;
+    setIsUploading(true);
 
-          if (width > maxDim || height > maxDim) {
-            if (width > height) {
-              height = Math.round((height * maxDim) / width);
-              width = maxDim;
-            } else {
-              width = Math.round((width * maxDim) / height);
-              height = maxDim;
+    try {
+      // 1. Client-side canvas normalization (max 1400px)
+      const compressedDataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result as string;
+          if (!result) return reject(new Error("Failed reading file"));
+
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const maxDim = 1400;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDim || height > maxDim) {
+              if (width > height) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              } else {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
             }
-          }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            const compressed = canvas.toDataURL("image/jpeg", 0.85);
-            onChange(compressed);
-          } else {
-            onChange(result);
-          }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL("image/jpeg", 0.88));
+            } else {
+              resolve(result);
+            }
+          };
+          img.onerror = () => reject(new Error("Failed rendering image element"));
+          img.src = result;
         };
-        img.src = result;
+        reader.onerror = () => reject(new Error("File reader encountered an error"));
+        reader.readAsDataURL(file);
+      });
+
+      // 2. Upload to Supabase Storage bucket
+      const uploadRes = await storageService.uploadImage(compressedDataUrl, {
+        folder,
+        bucket,
+        fileName: file.name,
+      });
+
+      onChange(uploadRes.url);
+
+      if (uploadRes.storageType === "supabase_bucket") {
+        setUploadNotice(`✓ Uploaded to Supabase Bucket (${bucket})`);
+      } else {
+        setUploadNotice("✓ Image ready (optimized data URL)");
       }
-    };
-    reader.readAsDataURL(file);
+      setTimeout(() => setUploadNotice(null), 5000);
+    } catch (err: any) {
+      console.error("Storage upload failed:", err);
+      setErrorMsg(err?.message || "Failed uploading image to storage");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleApplyUrl = () => {
     setErrorMsg(null);
+    setUploadNotice(null);
     const trimmed = urlInput.trim();
     if (!trimmed) {
       onChange(null);
@@ -136,15 +176,21 @@ export function ImageInputControl({
     <div className="space-y-3">
       {label && (
         <div className="flex items-center justify-between">
-          <label className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-            {label}
-          </label>
+          <div className="flex items-center gap-2">
+            <label className="block text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+              {label}
+            </label>
+            <span className="text-[9px] font-mono font-medium px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-500 border border-neutral-200/80 dark:border-neutral-700">
+              bucket: {bucket}
+            </span>
+          </div>
           {value && (
             <button
               type="button"
               onClick={() => {
                 onChange(null);
                 setUrlInput("");
+                setUploadNotice(null);
               }}
               className="text-[11px] text-red-500 hover:text-red-700 font-medium transition-colors"
             >
@@ -156,18 +202,34 @@ export function ImageInputControl({
 
       {/* Main Image Preview / Drop Area */}
       <div className="relative rounded-2xl border-2 border-dashed border-neutral-200 dark:border-neutral-700 bg-[#f8f9fa] dark:bg-[#12161f] overflow-hidden transition-all group">
+        {/* Uploading Progress Overlay */}
+        {isUploading && (
+          <div className="absolute inset-0 z-30 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center text-white space-y-2.5 p-4 animate-in fade-in duration-150">
+            <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="text-xs font-semibold">Uploading to Supabase Storage Bucket...</span>
+            <span className="text-[10px] text-neutral-300 font-mono">bucket/{bucket}/{folder}</span>
+          </div>
+        )}
+
         {value ? (
           <div className="relative h-44 sm:h-52 w-full bg-neutral-900 flex items-center justify-center overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={value}
-              alt="Facility Preview"
+              alt="Preview"
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end justify-between p-4">
-              <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 uppercase tracking-wider">
-                Active Picture
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold text-white bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10 uppercase tracking-wider">
+                  Active Picture
+                </span>
+                {value.includes("/storage/v1/object/public/") && (
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 backdrop-blur-md px-2 py-0.5 rounded border border-emerald-700/50">
+                    ☁️ Cloud Bucket
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -197,7 +259,7 @@ export function ImageInputControl({
             </div>
             <div className="space-y-1 max-w-xs">
               <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
-                Upload layout photo or parking entrance
+                Upload image to Supabase Storage Bucket
               </p>
               <p className="text-[11px] text-neutral-400 leading-tight">
                 {helperText}
@@ -231,6 +293,13 @@ export function ImageInputControl({
         />
       </div>
 
+      {/* Upload notice / success message */}
+      {uploadNotice && (
+        <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+          {uploadNotice}
+        </p>
+      )}
+
       {/* URL Input Bar */}
       {isUrlMode && (
         <div className="p-3 rounded-xl bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 space-y-2">
@@ -242,7 +311,7 @@ export function ImageInputControl({
               type="url"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="https://images.unsplash.com/... or /screenshots/..."
+              placeholder="https://...supabase.co/storage/v1/... or https://..."
               className="flex-1 px-3 py-1.5 text-xs rounded-lg bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white focus:outline-none"
             />
             <button
@@ -265,7 +334,7 @@ export function ImageInputControl({
       {presets && presets.length > 0 && (
         <div className="space-y-1.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">
-            Kigali Presets & Layout Views
+            Presets & Quick Picks
           </span>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {presets.map((preset) => {

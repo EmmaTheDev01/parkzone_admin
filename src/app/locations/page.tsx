@@ -1080,6 +1080,8 @@ export default function LocationsPage() {
                   label="Bay Overhead Camera / Photo"
                   value={bayImageUrl}
                   onChange={setBayImageUrl}
+                  folder="spaces"
+                  bucket="parking-images"
                   helperText="Upload a photo of this bay, optical ANPR camera feed, or pick a preset"
                 />
               </div>
@@ -1233,7 +1235,9 @@ export default function LocationsPage() {
                 label="Facility Showcase Picture / Architectural Photo"
                 value={newLocImageUrl}
                 onChange={setNewLocImageUrl}
-                helperText="Upload a photo from your computer, paste a direct web image link, or pick a Kigali preset"
+                folder="locations"
+                bucket="parking-images"
+                helperText="Upload a photo from your computer to Supabase Storage, paste a web link, or pick a Kigali preset"
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1493,7 +1497,9 @@ export default function LocationsPage() {
                 label="Facility Showcase Picture / Architectural Photo"
                 value={editLocImageUrl}
                 onChange={setEditLocImageUrl}
-                helperText="Upload a photo from your computer, paste a direct web image link, or pick a Kigali preset"
+                folder="locations"
+                bucket="parking-images"
+                helperText="Upload a photo from your computer to Supabase Storage, paste a web link, or pick a Kigali preset"
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
