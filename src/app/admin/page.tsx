@@ -790,15 +790,16 @@ export default function Dashboard() {
               <button
                 onClick={() => setShowAddModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 
             {reservationSuccess ? (
               <div className="py-8 text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto text-xl font-bold">
-                  ✓
+                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 </div>
                 <h4 className="font-bold text-sm text-neutral-900 dark:text-white">
                   Parking Ticket Issued!

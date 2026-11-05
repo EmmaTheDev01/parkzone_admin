@@ -6,6 +6,7 @@ import {
   ParkingCarIcon,
   SearchIcon,
   PlusIcon,
+  TrashIcon,
 } from "@/components/icons";
 import { parkingService, Vehicle, Profile } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
@@ -367,7 +368,7 @@ export default function VehiclesPage() {
                             </div>
                           ) : (
                             <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
-                              ✓ Clear Standing
+                              Clear Standing
                             </span>
                           )}
                         </td>
@@ -398,10 +399,10 @@ export default function VehiclesPage() {
                             </button>
                             <button
                               onClick={() => handleDeleteVehicle(v.id)}
-                              className="px-2 py-1 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-[10px] font-semibold"
+                              className="p-1 rounded-lg text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-[10px] font-semibold transition-colors"
                               title="Delete record"
                             >
-                              ✕
+                              <TrashIcon size={13} />
                             </button>
                           </div>
                         </td>
@@ -432,8 +433,9 @@ export default function VehiclesPage() {
               <button
                 onClick={() => setShowAddModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 

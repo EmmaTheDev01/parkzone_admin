@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AdminShell } from "@/components/AdminShell";
-import { PlusIcon, TagsIcon, MoreCircleIcon, TrashIcon } from "@/components/icons";
+import { PlusIcon, TagsIcon, MoreCircleIcon, TrashIcon, DatatablesIcon, GridDotsIcon } from "@/components/icons";
 import { ImageInputControl } from "@/components/ImageInputControl";
 import { parkingService, EVChargingPoint, EVChargingSession } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
@@ -284,7 +284,7 @@ export default function EVStationsPage() {
                     : "text-neutral-500 hover:text-black dark:hover:text-white"
                 }`}
               >
-                <span className="text-[11px]">☰</span>
+                <DatatablesIcon size={12} />
                 <span>Table</span>
               </button>
               <button
@@ -296,7 +296,7 @@ export default function EVStationsPage() {
                     : "text-neutral-500 hover:text-black dark:hover:text-white"
                 }`}
               >
-                <span className="text-[11px]">⊞</span>
+                <GridDotsIcon size={12} />
                 <span>Cards</span>
               </button>
             </div>
@@ -356,8 +356,8 @@ export default function EVStationsPage() {
                               {st.image_url ? (
                                 <img src={st.image_url} alt={st.station_identifier} className="w-full h-full object-cover" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs font-bold">
-                                  ⚡
+                                <div className="w-full h-full flex items-center justify-center text-neutral-400 text-[10px] font-bold">
+                                  EV
                                 </div>
                               )}
                             </div>
@@ -494,7 +494,7 @@ export default function EVStationsPage() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                         <span className="absolute bottom-2 left-2 text-[10px] font-mono font-bold text-white px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs">
-                          ⚡ {st.max_output_kw} kW {st.connector_type}
+                          {st.max_output_kw} kW {st.connector_type}
                         </span>
                       </div>
                     ) : null}
@@ -725,8 +725,9 @@ export default function EVStationsPage() {
               <button
                 onClick={() => setShowControlModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 
@@ -847,8 +848,9 @@ export default function EVStationsPage() {
               <button
                 onClick={() => setShowAddModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 

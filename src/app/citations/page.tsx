@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { AdminShell } from "@/components/AdminShell";
-import { InboxIcon, SearchIcon, PlusIcon } from "@/components/icons";
+import { InboxIcon, SearchIcon, PlusIcon, TrashIcon } from "@/components/icons";
 import { parkingService, ParkingFine, ParkingLocation } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
 import { TableSkeleton } from "@/components/Skeletons";
@@ -318,10 +318,10 @@ export default function CitationsPage() {
                             )}
                             <button
                               onClick={() => handleDeleteCitation(c.id)}
-                              className="px-2 py-1 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-[10px] font-semibold whitespace-nowrap shrink-0"
+                              className="p-1 rounded-lg text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 text-[10px] font-semibold whitespace-nowrap shrink-0 transition-colors"
                               title="Delete record"
                             >
-                              ✕
+                              <TrashIcon size={13} />
                             </button>
                           </div>
                         </td>
@@ -357,8 +357,9 @@ export default function CitationsPage() {
               <button
                 onClick={() => setShowIssueModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 

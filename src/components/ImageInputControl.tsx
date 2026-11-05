@@ -112,9 +112,9 @@ export function ImageInputControl({
       onChange(uploadRes.url);
 
       if (uploadRes.storageType === "supabase_bucket") {
-        setUploadNotice(`✓ Uploaded to Supabase Bucket (${bucket})`);
+        setUploadNotice(`Uploaded to Supabase Bucket (${bucket})`);
       } else {
-        setUploadNotice("✓ Image ready (optimized data URL)");
+        setUploadNotice("Image ready (optimized data URL)");
       }
       setTimeout(() => setUploadNotice(null), 5000);
     } catch (err: any) {
@@ -194,8 +194,8 @@ export function ImageInputControl({
                   Active Picture
                 </span>
                 {value.includes("/storage/v1/object/public/") && (
-                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 backdrop-blur-md px-2 py-0.5 rounded border border-emerald-700/50">
-                    ☁️ Cloud Bucket
+                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 backdrop-blur-md px-2 py-0.5 rounded border border-emerald-700/50 uppercase tracking-wider">
+                    Cloud Storage
                   </span>
                 )}
               </div>

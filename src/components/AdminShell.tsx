@@ -620,8 +620,9 @@ export function AdminShell({
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap text-neutral-700 dark:text-neutral-300 flex items-center justify-between cursor-pointer"
                 >
                   <span>Dashboard Theme</span>
-                  <span className="text-[11px] font-semibold text-neutral-500 capitalize flex items-center gap-1">
-                    {isDarkMode ? "🌙 Dark Mode" : "☀️ Light Mode"}
+                  <span className="text-[11px] font-semibold text-neutral-500 capitalize flex items-center gap-1.5">
+                    {isDarkMode ? <MoonIcon size={13} /> : <SunIcon size={13} />}
+                    {isDarkMode ? "Dark Mode" : "Light Mode"}
                   </span>
                 </button>
                 <button

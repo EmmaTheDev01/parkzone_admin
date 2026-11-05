@@ -589,8 +589,9 @@ export default function UsersPage() {
               <button
                 onClick={() => setShowSqlModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 
@@ -608,7 +609,7 @@ export default function UsersPage() {
                   onClick={handleCopySql}
                   className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-bold text-[10px] backdrop-blur-xs transition-all"
                 >
-                  {sqlCopied ? "✓ Copied to Clipboard" : "Copy SQL Script"}
+                  {sqlCopied ? "Copied to Clipboard" : "Copy SQL Script"}
                 </button>
               </div>
 
@@ -656,8 +657,9 @@ export default function UsersPage() {
               <button
                 onClick={() => setShowEditModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
+                aria-label="Close"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
 

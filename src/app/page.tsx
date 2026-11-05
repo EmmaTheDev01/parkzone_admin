@@ -70,7 +70,7 @@ export default function LandingPage() {
       subtitle: "3 of 3 Bays Open · KG 2 Roundabout",
       src: "/screenshots/kigali-convention-park.png",
       tag: "PARKING HUB",
-      chip1: "✓ Verified Municipal Hub",
+      chip1: "Verified Municipal Hub",
       chip2: "300 RWF/hr Standard Rate",
     },
     {
@@ -79,7 +79,7 @@ export default function LandingPage() {
       subtitle: "90° Perpendicular · Floor 1-4 Grid",
       src: "/screenshots/parking-spot-selection.png",
       tag: "BAY ALLOCATION",
-      chip1: "✓ Spot H-01 Selected",
+      chip1: "Spot H-01 Selected",
       chip2: "2h Duration Scheduled",
     },
     {
@@ -88,7 +88,7 @@ export default function LandingPage() {
       subtitle: "Nyarutarama EV Fast Charging · 60kW CCS2",
       src: "/screenshots/ev-map-navigation.png",
       tag: "GPS & EV MAP",
-      chip1: "⚡ 60 kW CCS2 Online",
+      chip1: "60 kW CCS2 Online",
       chip2: "11.3 km · 17 min Route",
     },
     {
@@ -97,7 +97,7 @@ export default function LandingPage() {
       subtitle: "Plate RAJ 778 Z · 100% Battery Level",
       src: "/screenshots/vehicle-telemetry.png",
       tag: "VEHICLE TELEMETRY",
-      chip1: "🔋 100% Battery Level",
+      chip1: "100% Battery Level",
       chip2: "Verified Rwanda Plate",
     },
     {
@@ -106,7 +106,7 @@ export default function LandingPage() {
       subtitle: "Active Session & Digital Receipts",
       src: "/screenshots/parking-history.png",
       tag: "SESSION & RECEIPTS",
-      chip1: "✓ Instant MoMo Receipt",
+      chip1: "Instant MoMo Receipt",
       chip2: "QR Bay Scan Ready",
     },
   ];
@@ -138,7 +138,7 @@ export default function LandingPage() {
       description:
         "Locate high-speed CCS2 and Type 2 charging ports in Kigali CBD and surrounding hubs. View live kilowatts delivered, state-of-charge percentage, and billing telemetry in real-time.",
       badge: "Nyarutarama EV Charging · 60kW Rapid DC",
-      subtext: "⚡ 11.3 km route · Charge Rate 250 RWF/kWh",
+      subtext: "11.3 km route · Charge Rate 250 RWF/kWh",
       action: "Navigate Station",
       screenshot: "/screenshots/ev-map-navigation.png",
     },
@@ -373,8 +373,8 @@ export default function LandingPage() {
 
                 {/* Floating Chips around the phone (positioned safely inside card padding) */}
                 <div className="absolute top-16 left-4 z-20 bg-white text-black text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-neutral-200 flex items-center gap-1.5 whitespace-nowrap">
-                  <span className="w-3.5 h-3.5 rounded-full bg-black text-white flex items-center justify-center text-[9px] shrink-0">
-                    ✓
+                  <span className="w-3.5 h-3.5 rounded-full bg-black text-white flex items-center justify-center shrink-0">
+                    <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </span>
                   <span>{appScreens[selectedHeroScreen].chip1}</span>
                 </div>
@@ -590,9 +590,18 @@ export default function LandingPage() {
                   Ideal for quick errands, shopping, or appointments in the City of Kigali.
                 </p>
                 <ul className="space-y-2 text-xs text-black pt-2">
-                  <li className="flex items-center gap-2">✓ 15-minute free grace period</li>
-                  <li className="flex items-center gap-2">✓ Real-time space navigation</li>
-                  <li className="flex items-center gap-2">✓ Instant MoMo & Airtel payment</li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+                    <span>15-minute free grace period</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+                    <span>Real-time space navigation</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+                    <span>Instant MoMo & Airtel payment</span>
+                  </li>
                 </ul>
               </div>
               <Link
@@ -620,10 +629,22 @@ export default function LandingPage() {
                   Full 24-hour access with automatic capping. Never overpay on full working days.
                 </p>
                 <ul className="space-y-2 text-xs text-white font-medium pt-2">
-                  <li className="flex items-center gap-2">✓ Automatic daily ceiling</li>
-                  <li className="flex items-center gap-2">✓ Unlimited city re-entries</li>
-                  <li className="flex items-center gap-2">✓ Overnight lot protection</li>
-                  <li className="flex items-center gap-2">✓ Zero surprise parking citations</li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+                    <span>Automatic daily ceiling</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+                    <span>Unlimited city re-entries</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+                    <span>Overnight lot protection</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white shrink-0" />
+                    <span>Zero surprise parking citations</span>
+                  </li>
                 </ul>
               </div>
               <Link
@@ -648,9 +669,18 @@ export default function LandingPage() {
                   Dedicated portals for logistics firms, taxi fleets, and corporate enterprises.
                 </p>
                 <ul className="space-y-2 text-xs text-black pt-2">
-                  <li className="flex items-center gap-2">✓ Consolidated monthly VAT invoice</li>
-                  <li className="flex items-center gap-2">✓ Multi-vehicle management</li>
-                  <li className="flex items-center gap-2">✓ Reserved commercial bays</li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+                    <span>Consolidated monthly VAT invoice</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+                    <span>Multi-vehicle management</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black shrink-0" />
+                    <span>Reserved commercial bays</span>
+                  </li>
                 </ul>
               </div>
               <Link
@@ -750,7 +780,7 @@ export default function LandingPage() {
                     onClick={() => handleCopy("+25091700692", "phone")}
                     className="text-[11px] font-bold text-neutral-600 hover:text-black bg-white px-2.5 py-1 rounded-full border border-neutral-200 shadow-xs transition-colors"
                   >
-                    {copiedItem === "phone" ? "Copied! ✓" : "Copy"}
+                    {copiedItem === "phone" ? "Copied!" : "Copy"}
                   </button>
                 </div>
                 <div>
@@ -786,7 +816,7 @@ export default function LandingPage() {
                     onClick={() => handleCopy("info@parkzone.dev", "email")}
                     className="text-[11px] font-bold text-neutral-600 hover:text-black bg-white px-2.5 py-1 rounded-full border border-neutral-200 shadow-xs transition-colors"
                   >
-                    {copiedItem === "email" ? "Copied! ✓" : "Copy"}
+                    {copiedItem === "email" ? "Copied!" : "Copy"}
                   </button>
                 </div>
                 <div>
@@ -837,7 +867,7 @@ export default function LandingPage() {
                 {contactSubmitted ? (
                   <div className="mt-8 p-6 rounded-2xl bg-white border border-black/20 text-center space-y-2">
                     <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center mx-auto text-sm font-bold">
-                      ✓
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
                     <h4 className="text-base font-bold text-black">Message Received</h4>
                     <p className="text-xs text-neutral-600 max-w-sm mx-auto">
@@ -912,7 +942,7 @@ export default function LandingPage() {
                   className="font-bold text-black hover:underline flex items-center gap-1"
                 >
                   <span>Call +25091700692</span>
-                  <span>↗</span>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M7 7h10v10"/></svg>
                 </a>
               </div>
             </div>
