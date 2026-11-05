@@ -19,9 +19,19 @@ export default function LoginPage() {
   const [isVerifyingExistingSession, setIsVerifyingExistingSession] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Auto-check for existing active session to remember login
+  // Check URL error params and auto-check for existing active session
   React.useEffect(() => {
     let isMounted = true;
+
+    // Check for query param errors (e.g. ?error=unauthorized)
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get("error");
+      if (err === "unauthorized" || err === "not_admin") {
+        setErrorMsg("Access Denied: Only users with the 'admin' role are authorized to log in to this portal.");
+      }
+    }
+
     const checkActiveSession = async () => {
       try {
         if (typeof window !== "undefined") {
@@ -34,9 +44,40 @@ export default function LoginPage() {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();
 
-        if (session && isMounted) {
-          window.location.href = "/admin";
-          return;
+        if (session?.user && isMounted) {
+          // Verify role is strictly 'admin'
+          let isAdmin = false;
+          try {
+            const roleRes = await fetch("/api/auth/verify-role", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId: session.user.id, email: session.user.email }),
+            });
+            if (roleRes.ok) {
+              const json = await roleRes.json();
+              isAdmin = json.isAdmin === true;
+            }
+          } catch {
+            // fallback check
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("role, is_active")
+              .eq("id", session.user.id)
+              .maybeSingle();
+            const r = (profile?.role || (session.user.user_metadata as any)?.role || "").toLowerCase();
+            isAdmin = r === "admin" && profile?.is_active !== false;
+          }
+
+          if (isAdmin) {
+            window.location.href = "/admin";
+            return;
+          } else {
+            // Existing non-admin session: purge and sign out immediately
+            await supabase.auth.signOut({ scope: "global" });
+            localStorage.removeItem("parkzone_admin_session");
+            document.cookie = "parkzone_admin_session=;path=/;max-age=0";
+            setErrorMsg("Access Denied: Only accounts with an authorized 'admin' role can access this portal.");
+          }
         }
       } catch (err) {
         console.warn("Session auto-detection skipped:", err);
@@ -75,15 +116,71 @@ export default function LoginPage() {
         return;
       }
 
-      if (data?.session) {
-        if (rememberTerminal && typeof window !== "undefined") {
-          localStorage.setItem("parkzone_admin_session", email.trim());
-          document.cookie = `parkzone_admin_session=${encodeURIComponent(email.trim())};path=/;max-age=2592000;SameSite=Lax`;
-        }
-        window.location.href = "/admin";
-      } else {
-        window.location.href = "/admin";
+      if (!data?.user) {
+        setErrorMsg("Authentication error: No user returned.");
+        setIsLoading(false);
+        return;
       }
+
+      // ── STRICT ADMIN ROLE GATE ──
+      // Verify role is strictly 'admin'
+      let isAdmin = false;
+      let detectedRole = "driver";
+
+      try {
+        const roleRes = await fetch("/api/auth/verify-role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: data.user.id, email: data.user.email }),
+        });
+
+        if (roleRes.ok) {
+          const json = await roleRes.json();
+          isAdmin = json.isAdmin === true;
+          detectedRole = json.role || "driver";
+        }
+      } catch (e) {
+        console.warn("API role check warning, falling back:", e);
+      }
+
+      // Fallback verification against public.profiles
+      if (!isAdmin) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role, is_active")
+          .eq("id", data.user.id)
+          .maybeSingle();
+
+        const role = (profile?.role || (data.user.user_metadata as any)?.role || "").toLowerCase();
+        if (role === "admin" && profile?.is_active !== false) {
+          isAdmin = true;
+          detectedRole = "admin";
+        } else if (profile?.role) {
+          detectedRole = profile.role;
+        }
+      }
+
+      if (!isAdmin) {
+        // Immediate revocation: Kill session and cookies
+        await supabase.auth.signOut({ scope: "global" });
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("parkzone_admin_session");
+          document.cookie = "parkzone_admin_session=;path=/;max-age=0";
+        }
+
+        setErrorMsg(
+          `Access Denied: Only users with the 'admin' role are permitted to log in to this portal. Your account role is '${detectedRole}'.`
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Valid admin verified
+      if (rememberTerminal && typeof window !== "undefined") {
+        localStorage.setItem("parkzone_admin_session", email.trim());
+        document.cookie = `parkzone_admin_session=${encodeURIComponent(email.trim())};path=/;max-age=2592000;SameSite=Lax`;
+      }
+      window.location.href = "/admin";
     } catch (err: any) {
       setErrorMsg(err?.message || "An unexpected error occurred during authentication.");
       setIsLoading(false);

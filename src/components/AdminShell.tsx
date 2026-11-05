@@ -106,12 +106,49 @@ export function AdminShell({
       } = await supabase.auth.getUser();
 
       if (user) {
+        // 1. Strict admin role verification
+        let isAdmin = false;
+        let detectedRole = "driver";
+
+        try {
+          const roleRes = await fetch("/api/auth/verify-role", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id, email: user.email }),
+          });
+          if (roleRes.ok) {
+            const json = await roleRes.json();
+            isAdmin = json.isAdmin === true;
+            detectedRole = json.role || "driver";
+          }
+        } catch {
+          // fallback check
+        }
+
         // Fetch matching profile
         const { data: profile } = await supabase
           .from("profiles")
-          .select("id, full_name, email, role, avatar_url, phone_number")
+          .select("id, full_name, email, role, avatar_url, phone_number, is_active")
           .eq("id", user.id)
           .maybeSingle();
+
+        if (!isAdmin) {
+          const rawRole = (profile?.role || (user.user_metadata as any)?.role || "").toLowerCase();
+          isAdmin = rawRole === "admin" && profile?.is_active !== false;
+          detectedRole = profile?.role || (user.user_metadata as any)?.role || "driver";
+        }
+
+        // Reject non-admin access immediately
+        if (!isAdmin) {
+          console.warn("Unauthorized admin portal access by non-admin:", user.email, "role:", detectedRole);
+          await supabase.auth.signOut({ scope: "global" });
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("parkzone_admin_session");
+            document.cookie = "parkzone_admin_session=;path=/;max-age=0";
+            window.location.href = "/login?error=unauthorized";
+          }
+          return;
+        }
 
         const rawName =
           profile?.full_name ||
@@ -125,13 +162,12 @@ export function AdminShell({
             : "Admin");
 
         const rawEmail = profile?.email || user.email || "admin@parkzone.rw";
-        const rawRole = (profile?.role || user.user_metadata?.role || "admin").toUpperCase();
 
         setCurrentUser({
           id: user.id,
           fullName: rawName,
           email: rawEmail,
-          role: rawRole === "ADMIN" ? "System Admin" : rawRole,
+          role: "System Admin",
           initials: getInitials(rawName, rawEmail),
           avatarUrl: profile?.avatar_url || user.user_metadata?.avatar_url || null,
         });
@@ -147,17 +183,18 @@ export function AdminShell({
       if (savedEmail) {
         const { data: profByEmail } = await supabase
           .from("profiles")
-          .select("id, full_name, email, role, avatar_url")
+          .select("id, full_name, email, role, avatar_url, is_active")
           .eq("email", savedEmail)
           .maybeSingle();
 
-        if (profByEmail) {
+        const role = (profByEmail?.role || "").toLowerCase();
+        if (profByEmail && role === "admin" && profByEmail.is_active !== false) {
           const name = profByEmail.full_name || savedEmail.split("@")[0];
           setCurrentUser({
             id: profByEmail.id,
             fullName: name,
             email: profByEmail.email || savedEmail,
-            role: (profByEmail.role || "admin").toUpperCase() === "ADMIN" ? "System Admin" : profByEmail.role?.toUpperCase() || "Admin",
+            role: "System Admin",
             initials: getInitials(name, savedEmail),
             avatarUrl: profByEmail.avatar_url || null,
           });
@@ -165,18 +202,12 @@ export function AdminShell({
           return;
         }
 
-        const namePart = savedEmail
-          .split("@")[0]
-          .replace(/[._]/g, " ")
-          .replace(/\b\w/g, (c) => c.toUpperCase());
-        setCurrentUser({
-          fullName: namePart,
-          email: savedEmail,
-          role: "System Admin",
-          initials: getInitials(namePart, savedEmail),
-          avatarUrl: null,
-        });
-        setIsAuthVerifying(false);
+        // Invalid non-admin session
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("parkzone_admin_session");
+          document.cookie = "parkzone_admin_session=;path=/;max-age=0";
+          window.location.href = "/login?error=unauthorized";
+        }
         return;
       }
 
@@ -336,6 +367,16 @@ export function AdminShell({
   };
 
   useEffect(() => {
+    // Restore admin's chosen theme (supports light mode on nav header and entire dashboard)
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("parkzone_theme");
+      if (savedTheme === "light") {
+        document.documentElement.classList.remove("dark");
+      } else if (savedTheme === "dark") {
+        document.documentElement.classList.add("dark");
+      }
+    }
+
     loadShellData();
     loadCurrentUser();
 
@@ -520,6 +561,16 @@ export function AdminShell({
             )}
           </div>
 
+          {/* Light / Dark Mode Toggle on Admin Nav Header */}
+          <button
+            onClick={toggleTheme}
+            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle Theme"
+            className="p-2 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 flex items-center justify-center cursor-pointer"
+          >
+            {isDarkMode ? <SunIcon size={18} /> : <MoonIcon size={18} />}
+          </button>
+
           {/* Landing Page Link */}
           <Link
             href="/"
@@ -575,6 +626,15 @@ export function AdminShell({
                     {currentUser.role}
                   </span>
                 </div>
+                <button
+                  onClick={toggleTheme}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 whitespace-nowrap text-neutral-700 dark:text-neutral-300 flex items-center justify-between cursor-pointer"
+                >
+                  <span>Dashboard Theme</span>
+                  <span className="text-[11px] font-semibold text-neutral-500 capitalize flex items-center gap-1">
+                    {isDarkMode ? "🌙 Dark Mode" : "☀️ Light Mode"}
+                  </span>
+                </button>
                 <button
                   onClick={() => setShowProfileMenu(false)}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 mt-1 whitespace-nowrap text-neutral-700 dark:text-neutral-300"

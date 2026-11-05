@@ -1082,7 +1082,7 @@ export default function LocationsPage() {
                   onChange={setBayImageUrl}
                   folder="spaces"
                   bucket="parking-images"
-                  helperText="Upload a photo of this bay, optical ANPR camera feed, or pick a preset"
+                  helperText="Upload a photo of this bay from your device or paste a direct camera feed URL"
                 />
               </div>
 
@@ -1237,7 +1237,7 @@ export default function LocationsPage() {
                 onChange={setNewLocImageUrl}
                 folder="locations"
                 bucket="parking-images"
-                helperText="Upload a photo from your computer to Supabase Storage, paste a web link, or pick a Kigali preset"
+                helperText="Upload a photo from your computer to Supabase Storage or paste a web image link"
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1499,7 +1499,7 @@ export default function LocationsPage() {
                 onChange={setEditLocImageUrl}
                 folder="locations"
                 bucket="parking-images"
-                helperText="Upload a photo from your computer to Supabase Storage, paste a web link, or pick a Kigali preset"
+                helperText="Upload a photo from your computer to Supabase Storage or paste a web image link"
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

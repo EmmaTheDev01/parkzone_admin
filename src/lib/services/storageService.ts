@@ -74,3 +74,4 @@ export const storageService = {
     return `https://ui-avatars.com/api/?name=${encodedName}&background=212529&color=fff&bold=true&rounded=true&size=128`;
   },
 };
+

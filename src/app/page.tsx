@@ -28,6 +28,25 @@ export default function LandingPage() {
   const [contactSubmitted, setContactSubmitted] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", contact: "", message: "" });
 
+  // Ensure landing page is strictly dark mode (admin theme preference is preserved for admin dashboard)
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const html = document.documentElement;
+    const savedAdminTheme = localStorage.getItem("parkzone_theme") || "dark";
+
+    // Strictly enforce dark mode on public landing page
+    html.classList.add("dark");
+
+    return () => {
+      // When leaving landing page (e.g. entering /admin), restore admin's theme preference
+      if (savedAdminTheme === "light") {
+        html.classList.remove("dark");
+      } else {
+        html.classList.add("dark");
+      }
+    };
+  }, []);
+
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard?.writeText(text);
     setCopiedItem(label);

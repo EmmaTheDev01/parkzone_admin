@@ -40,3 +40,4 @@ DROP POLICY IF EXISTS "Admins can delete parkzone media objects" ON storage.obje
 CREATE POLICY "Admins can delete parkzone media objects"
     ON storage.objects FOR DELETE
     USING (bucket_id IN ('parkzone-media', 'parking-images', 'avatars'));
+

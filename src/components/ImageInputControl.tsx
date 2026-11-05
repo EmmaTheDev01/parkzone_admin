@@ -14,50 +14,19 @@ interface ImageInputControlProps {
   value: string | null | undefined;
   onChange: (url: string | null) => void;
   presets?: PresetImage[];
+  showPresets?: boolean;
   helperText?: string;
   folder?: UploadOptions["folder"];
   bucket?: UploadOptions["bucket"];
 }
 
-const DEFAULT_PRESETS: PresetImage[] = [
-  {
-    label: "Kigali Convention Hub",
-    url: "/screenshots/kigali-convention-park.png",
-    category: "Parking Hub",
-  },
-  {
-    label: "Kigali Heights Underground",
-    url: "/screenshots/screen1.png",
-    category: "Underground",
-  },
-  {
-    label: "Downtown Car Park CBD",
-    url: "/screenshots/screen2.png",
-    category: "Multi-tier",
-  },
-  {
-    label: "Nyarutarama EV Fast Hub",
-    url: "/screenshots/ev-map-navigation.png",
-    category: "EV Charging",
-  },
-  {
-    label: "Spot H-01 Bay Overhead",
-    url: "/screenshots/parking-spot-selection.png",
-    category: "Bay Camera",
-  },
-  {
-    label: "3D Telemetry Grid",
-    url: "/screenshots/vehicle-telemetry.png",
-    category: "Telemetry",
-  },
-];
-
 export function ImageInputControl({
   label = "Facility Photograph / Layout Picture",
   value,
   onChange,
-  presets = DEFAULT_PRESETS,
-  helperText = "Upload a photo from your device, choose from presets, or paste an external image URL.",
+  presets = [],
+  showPresets = false,
+  helperText = "Upload a photo from your device to Supabase Storage or paste an external image URL.",
   folder = "locations",
   bucket = "parkzone-media",
 }: ImageInputControlProps) {
@@ -330,8 +299,8 @@ export function ImageInputControl({
         <p className="text-[11px] text-red-500 font-medium">{errorMsg}</p>
       )}
 
-      {/* Quick Curated Presets Bar */}
-      {presets && presets.length > 0 && (
+      {/* Quick Curated Presets Bar (Hidden unless explicitly enabled) */}
+      {showPresets && presets && presets.length > 0 && (
         <div className="space-y-1.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 block">
             Presets & Quick Picks
