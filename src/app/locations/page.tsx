@@ -535,131 +535,123 @@ export default function LocationsPage() {
       breadcrumb="Parking Stations & Bays"
       onQuickAdd={() => setShowCreateLocationModal(true)}
     >
-      <div className="space-y-6">
-        {/* Top Header Banner with Live Realtime Badge & Controls */}
-        <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200/80 dark:border-neutral-800/80 shadow-xs overflow-hidden transition-all">
-          {/* Top Telemetry & Status Bar */}
-          <div className="px-5 py-2.5 border-b border-neutral-100 dark:border-neutral-800/70 bg-neutral-50/60 dark:bg-[#12161d]/60 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div className="space-y-5">
+        {/* Top Banner with Real-time Indicator (Uniform across ParkZone Admin) */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#151921] p-6 rounded-2xl border border-[#e8ecf1] dark:border-[#202734] shadow-xs">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 uppercase tracking-wide border border-neutral-200 dark:border-neutral-700">
                 Kigali Municipal Mobility
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200/70 dark:border-neutral-700/70 shadow-2xs">
-                {selectedLocation ? selectedLocation.name : "All Facilities Directory"}
-              </span>
-              <span className="text-neutral-400 dark:text-neutral-500 font-medium hidden sm:inline text-xs">
+              <span className="text-xs text-neutral-400">
                 · {formatCurrency(selectedLocation?.hourly_rate ?? 300)}/hr · {formatCurrency(selectedLocation?.daily_rate ?? 2000)} Daily Cap
               </span>
-            </div>
-
-            <div className="flex items-center gap-2">
               {lastRealtimeEvent ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 animate-pulse">
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 animate-pulse">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   {lastRealtimeEvent}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-800/60 border border-neutral-200/60 dark:border-neutral-800">
+                <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/60 border border-neutral-200/50 dark:border-neutral-800">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   ANPR & Telemetry Active
                 </span>
               )}
             </div>
+            <h1 className="text-2xl font-extrabold text-neutral-900 dark:text-white mt-1">
+              Parking Stations & Interactive Bay Control
+            </h1>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Live ANPR camera sensors & ultrasonic loop telemetry. Admin has full interactive override control over bay allocations.
+            </p>
           </div>
 
-          {/* Main Title & Action Dock */}
-          <div className="p-5 sm:p-6 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
-            {/* Left: Title & Subtitle */}
-            <div className="space-y-1">
-              <h1 className="text-2xl sm:text-[26px] font-extrabold tracking-tight text-neutral-900 dark:text-white">
-                Parking Stations & Interactive Bay Control
-              </h1>
-              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-2xl leading-relaxed">
-                Live ANPR camera sensors & ultrasonic loop telemetry. Admin has full interactive override control over bay allocations.
-              </p>
+          <button
+            onClick={() => setShowCreateLocationModal(true)}
+            className="px-4 py-2 rounded-xl bg-[#212529] hover:bg-black dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-neutral-900 text-xs font-semibold transition-colors shadow-xs flex items-center gap-1.5 self-start md:self-auto whitespace-nowrap shrink-0"
+          >
+            <PlusIcon size={14} />
+            <span className="whitespace-nowrap">Add Facility</span>
+          </button>
+        </div>
+
+        {/* Operational Toolbar: View Switcher & Facility Stall Tools */}
+        <div className="bg-white dark:bg-[#151921] px-4 py-3 rounded-2xl border border-[#e8ecf1] dark:border-[#202734] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Left: View Mode Segmented Switcher */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="inline-flex items-center p-1 rounded-xl bg-neutral-100 dark:bg-[#101319] border border-neutral-200 dark:border-neutral-800">
+              <button
+                type="button"
+                onClick={() => setLocationViewMode("table")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  locationViewMode === "table"
+                    ? "bg-white dark:bg-[#1e2430] text-neutral-900 dark:text-white shadow-2xs"
+                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+                }`}
+                title="Table view of all facilities"
+              >
+                <DatatablesIcon size={13} />
+                <span>Facilities Table</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocationViewMode("split")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  locationViewMode === "split"
+                    ? "bg-white dark:bg-[#1e2430] text-neutral-900 dark:text-white shadow-2xs"
+                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
+                }`}
+                title="Side-by-side split view"
+              >
+                <GridDotsIcon size={13} />
+                <span>Split View</span>
+              </button>
             </div>
 
-            {/* Right: View Mode Toggle & Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-              {/* Segmented View Switcher */}
-              <div className="inline-flex items-center p-1 rounded-xl bg-neutral-100 dark:bg-[#101319] border border-neutral-200/80 dark:border-neutral-800 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setLocationViewMode("table")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                    locationViewMode === "table"
-                      ? "bg-white dark:bg-[#1e2430] text-neutral-900 dark:text-white shadow-2xs"
-                      : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                  }`}
-                  title="Table view of all facilities"
-                >
-                  <DatatablesIcon size={13} />
-                  <span>Facilities Table</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLocationViewMode("split")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                    locationViewMode === "split"
-                      ? "bg-white dark:bg-[#1e2430] text-neutral-900 dark:text-white shadow-2xs"
-                      : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
-                  }`}
-                  title="Side-by-side split view"
-                >
-                  <GridDotsIcon size={13} />
-                  <span>Split View</span>
-                </button>
-              </div>
+            {selectedLocation && (
+              <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium hidden sm:inline">
+                Selected: <strong className="text-neutral-900 dark:text-white font-semibold">{selectedLocation.name}</strong> ({spaces.length} bays)
+              </span>
+            )}
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {selectedLocation && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextNum = (spaces.length + 1).toString().padStart(2, "0");
-                        setNewSpaceNumber(`A-${nextNum}`);
-                        setNewSpaceHourlyRate(selectedLocation.hourly_rate || 300);
-                        setNewSpaceZone(availableZones[1] || "Zone A");
-                        setShowAddLotModal(true);
-                      }}
-                      className="h-9 px-3.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a202c] hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-800 dark:text-neutral-200 transition-colors shadow-2xs flex items-center gap-1.5 whitespace-nowrap"
-                    >
-                      <PlusIcon size={13} />
-                      <span>Add Lot / Bay</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleOpenEditLocation}
-                      className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a202c] hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors shadow-2xs flex items-center gap-1.5 whitespace-nowrap"
-                    >
-                      <SettingsIcon size={13} />
-                      <span>Facility Settings</span>
-                    </button>
-                  </>
-                )}
-
+          {/* Right: Selected Facility Quick Actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {selectedLocation && (
+              <>
                 <button
                   type="button"
-                  onClick={() => setShowSpaceGeneratorModal(true)}
-                  className="h-9 px-3 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-[#1a202c] hover:bg-neutral-50 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors shadow-2xs flex items-center gap-1.5 whitespace-nowrap"
+                  onClick={() => {
+                    const nextNum = (spaces.length + 1).toString().padStart(2, "0");
+                    setNewSpaceNumber(`A-${nextNum}`);
+                    setNewSpaceHourlyRate(selectedLocation.hourly_rate || 300);
+                    setNewSpaceZone(availableZones[1] || "Zone A");
+                    setShowAddLotModal(true);
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-800 dark:text-neutral-200 transition-colors flex items-center gap-1.5 whitespace-nowrap"
                 >
-                  <GridDotsIcon size={13} />
-                  <span>Bulk Generator</span>
+                  <PlusIcon size={12} />
+                  <span>Add Lot / Bay</span>
                 </button>
-
                 <button
                   type="button"
-                  onClick={() => setShowCreateLocationModal(true)}
-                  className="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-black dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5 whitespace-nowrap"
+                  onClick={handleOpenEditLocation}
+                  className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
                 >
-                  <PlusIcon size={13} />
-                  <span>Add Facility</span>
+                  <SettingsIcon size={12} />
+                  <span>Facility Settings</span>
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setShowSpaceGeneratorModal(true)}
+              className="px-3 py-1.5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            >
+              <GridDotsIcon size={12} />
+              <span>Bulk Generator</span>
+            </button>
           </div>
         </div>
 
