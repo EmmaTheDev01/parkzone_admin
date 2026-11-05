@@ -334,12 +334,12 @@ export default function LandingPage() {
           </p>
         </div>
 
-        {/* 4-Point Symmetrical Layout with Animated Globe */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center max-w-5xl mx-auto">
-          {/* Left Column */}
-          <div className="lg:col-span-3 space-y-8 sm:space-y-12 text-center lg:text-left order-2 lg:order-1">
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+        {/* 4-Point Symmetrical Layout with Cloned Coverage Map */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center max-w-5xl mx-auto">
+          {/* Left Column (2 Callouts) */}
+          <div className="lg:col-span-3 space-y-10 sm:space-y-12 text-center order-2 lg:order-1">
+            <div className="space-y-2 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-neutral-100/90 flex items-center justify-center text-neutral-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-neutral-200/60 mb-1">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
                   <circle cx="12" cy="10" r="3" />
@@ -348,13 +348,13 @@ export default function LandingPage() {
               <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
                 Citywide Coverage
               </h4>
-              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal max-w-[240px]">
                 Powered by optical ANPR camera gates across all Kigali municipal sectors.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+            <div className="space-y-2 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-neutral-100/90 flex items-center justify-center text-neutral-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-neutral-200/60 mb-1">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="2" y1="12" x2="22" y2="12" />
@@ -364,21 +364,21 @@ export default function LandingPage() {
               <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
                 Smart Telemetry
               </h4>
-              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal max-w-[240px]">
                 Real-time ultrasonic loop sensors track every single bay and stall occupancy.
               </p>
             </div>
           </div>
 
-          {/* Center Column: 3D Animating Dotted Telemetry Globe */}
-          <div className="lg:col-span-6 flex justify-center items-center order-1 lg:order-2 py-4">
+          {/* Center Column: Cloned Popcorn.space Coverage Map Graphic */}
+          <div className="lg:col-span-6 flex justify-center items-center order-1 lg:order-2 py-2">
             <AnimatedGlobe />
           </div>
 
-          {/* Right Column */}
-          <div className="lg:col-span-3 space-y-8 sm:space-y-12 text-center lg:text-left order-3">
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-emerald-600 shadow-2xs">
+          {/* Right Column (2 Callouts) */}
+          <div className="lg:col-span-3 space-y-10 sm:space-y-12 text-center order-3">
+            <div className="space-y-2 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-neutral-100/90 flex items-center justify-center text-emerald-600 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-neutral-200/60 mb-1">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
@@ -386,13 +386,13 @@ export default function LandingPage() {
               <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
                 60kW DC EV Hubs
               </h4>
-              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal max-w-[240px]">
                 Rapid charging stations with 0 RWF parking fees during active charging.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto lg:mx-0 text-neutral-800 shadow-2xs">
+            <div className="space-y-2 flex flex-col items-center">
+              <div className="w-14 h-14 rounded-full bg-neutral-100/90 flex items-center justify-center text-neutral-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-neutral-200/60 mb-1">
                 <svg className="w-5 h-5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                   <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
                   <line x1="12" y1="18" x2="12.01" y2="18" />
@@ -401,7 +401,7 @@ export default function LandingPage() {
               <h4 className="text-base font-extrabold text-neutral-900 tracking-tight">
                 Instant MoMo
               </h4>
-              <p className="text-xs text-neutral-500 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-neutral-500 leading-relaxed font-normal max-w-[240px]">
                 Automated USSD prompt on your phone for instant, frictionless gate departure.
               </p>
             </div>
