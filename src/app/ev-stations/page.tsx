@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { PlusIcon, TagsIcon, MoreCircleIcon } from "@/components/icons";
+import { ImageInputControl } from "@/components/ImageInputControl";
 import { parkingService, EVChargingPoint, EVChargingSession } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
 
@@ -25,6 +26,7 @@ export default function EVStationsPage() {
   const [newPrice, setNewPrice] = useState(250);
   const [newFlatQuick, setNewFlatQuick] = useState(9000);
   const [newFlatFull, setNewFlatFull] = useState(10000);
+  const [newImageUrl, setNewImageUrl] = useState<string | null>(null);
 
   // Edit Charger Form State
   const [editStatus, setEditStatus] = useState<"available" | "charging" | "faulted" | "reserved" | "offline">("available");
@@ -33,6 +35,7 @@ export default function EVStationsPage() {
   const [editPricePerKwh, setEditPricePerKwh] = useState(250);
   const [editFlatQuick, setEditFlatQuick] = useState(9000);
   const [editFlatFull, setEditFlatFull] = useState(10000);
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
 
   // Real-time flash indicator
   const [realtimeNotice, setRealtimeNotice] = useState<string | null>(null);
@@ -92,6 +95,7 @@ export default function EVStationsPage() {
     setEditPricePerKwh(charger.price_per_kwh || 250);
     setEditFlatQuick(charger.flat_rate_quick_rwf || 9000);
     setEditFlatFull(charger.flat_rate_full_rwf || 10000);
+    setEditImageUrl(charger.image_url || null);
     setShowControlModal(true);
   };
 
@@ -111,6 +115,7 @@ export default function EVStationsPage() {
         price_per_kwh: Number(editPricePerKwh),
         flat_rate_quick_rwf: Number(editFlatQuick),
         flat_rate_full_rwf: Number(editFlatFull),
+        image_url: editImageUrl,
       });
 
       if (updated) {
@@ -143,6 +148,7 @@ export default function EVStationsPage() {
         current_power_draw_kw: 0,
         charging_power_watts: 0,
         total_energy_delivered_kwh: 0,
+        image_url: newImageUrl,
       });
 
       if (created) {
@@ -150,6 +156,7 @@ export default function EVStationsPage() {
       }
       setShowAddModal(false);
       setNewIdentifier("");
+      setNewImageUrl(null);
     } catch (err) {
       console.error("Failed creating EV station in DB:", err);
     }
@@ -273,6 +280,21 @@ export default function EVStationsPage() {
                   className="bg-white dark:bg-[#151921] rounded-2xl border border-[#e8ecf1] dark:border-[#202734] p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-neutral-400 transition-all cursor-pointer"
                 >
                   <div>
+                    {/* Station Photograph */}
+                    {st.image_url ? (
+                      <div className="relative w-full h-36 rounded-xl overflow-hidden mb-3 border border-neutral-200/60 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800">
+                        <img
+                          src={st.image_url}
+                          alt={st.station_identifier}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                        <span className="absolute bottom-2 left-2 text-[10px] font-mono font-bold text-white px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs">
+                          ⚡ {st.max_output_kw} kW {st.connector_type}
+                        </span>
+                      </div>
+                    ) : null}
+
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-[10px] font-bold text-neutral-400 tracking-wider uppercase block">
@@ -479,14 +501,14 @@ export default function EVStationsPage() {
       {/* ────────────────── MODAL: CHARGER ADMIN CONTROL ────────────────── */}
       {showControlModal && selectedCharger && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
               <div>
                 <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
                   Charger Telemetry Control · {selectedCharger.station_identifier}
                 </h3>
                 <p className="text-xs text-neutral-400 mt-0.5">
-                  OCPP 2.0.1 command interface & tariff governance.
+                  OCPP 2.0.1 command interface, station picture & tariff governance.
                 </p>
               </div>
               <button
@@ -497,7 +519,15 @@ export default function EVStationsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveChargerControl} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveChargerControl} className="space-y-3.5 text-xs">
+              {/* Photo Showcase */}
+              <ImageInputControl
+                label="EV Charger Photograph / Telemetry View"
+                value={editImageUrl}
+                onChange={setEditImageUrl}
+                helperText="Upload a photo from your device, direct web image URL, or pick a Kigali preset"
+              />
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold mb-1">Session Status</label>
@@ -591,11 +621,16 @@ export default function EVStationsPage() {
       {/* ── MODAL: ADD CHARGER ── */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 w-full max-w-md p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="font-bold text-base text-neutral-900 dark:text-white">
-                Register New EV Charging Station
-              </h3>
+              <div>
+                <h3 className="font-bold text-base text-neutral-900 dark:text-white">
+                  Register New EV Charging Station
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Configure hardware specs, tariffs, and station photos.
+                </p>
+              </div>
               <button
                 onClick={() => setShowAddModal(false)}
                 className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center hover:text-black dark:hover:text-white"
@@ -604,7 +639,15 @@ export default function EVStationsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleAddStation} className="space-y-3 text-xs">
+            <form onSubmit={handleAddStation} className="space-y-3.5 text-xs">
+              {/* Photo Showcase */}
+              <ImageInputControl
+                label="EV Charger Photograph"
+                value={newImageUrl}
+                onChange={setNewImageUrl}
+                helperText="Upload a photo of the station or pick a Kigali preset"
+              />
+
               <div>
                 <label className="block font-semibold mb-1">Station Identifier</label>
                 <input

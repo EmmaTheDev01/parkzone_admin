@@ -427,6 +427,8 @@ export const parkingService = {
       if (updates.space_number !== undefined) safeUpdates.space_number = updates.space_number;
       if ((updates as any).floor !== undefined) safeUpdates.floor = (updates as any).floor;
       if (updates.space_type !== undefined) safeUpdates.space_type = updates.space_type;
+      if (updates.image_url !== undefined) safeUpdates.image_url = updates.image_url;
+      if (updates.price_per_hour_rwf !== undefined) safeUpdates.price_per_hour_rwf = updates.price_per_hour_rwf;
       if (updates.is_occupied !== undefined) {
         safeUpdates.status = updates.is_occupied ? "occupied" : "available";
       } else if ((updates as any).status !== undefined) {

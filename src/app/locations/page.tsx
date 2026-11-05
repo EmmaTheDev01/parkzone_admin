@@ -12,8 +12,22 @@ import {
 } from "@/components/icons";
 import { parkingService, ParkingLocation, ParkingSpace } from "@/lib/services/parkingService";
 import { formatCurrency } from "@/lib/utils/format";
+import { ImageInputControl } from "@/components/ImageInputControl";
 
 const ZONES = ["All Zones", "Zone A", "Zone B", "Zone C", "Zone D", "Zone E"] as const;
+
+const AVAILABLE_AMENITIES = [
+  "CCTV Surveillance",
+  "24/7 Security Patrol",
+  "Underground Covered",
+  "Wheelchair Step-Free",
+  "EV Fast Charging",
+  "Car Wash On-Site",
+  "Tire Inflation Station",
+  "MoMo QR Payment",
+  "Automated Boom Gate",
+  "Restrooms",
+];
 
 export default function LocationsPage() {
   const [loading, setLoading] = useState(true);
@@ -37,22 +51,46 @@ export default function LocationsPage() {
   // New Location Form State
   const [newLocName, setNewLocName] = useState("");
   const [newLocAddress, setNewLocAddress] = useState("");
+  const [newLocImageUrl, setNewLocImageUrl] = useState<string | null>(null);
   const [newLocTopology, setNewLocTopology] = useState<"oblique" | "perpendicular" | "parallel" | "wide">("perpendicular");
+  const [newLocFloors, setNewLocFloors] = useState("4 Levels (Underground B1-B4)");
   const [newLocHourly, setNewLocHourly] = useState(300);
   const [newLocDaily, setNewLocDaily] = useState(2000);
   const [newLocSpots, setNewLocSpots] = useState(80);
   const [newLocLat, setNewLocLat] = useState(-1.9536);
   const [newLocLng, setNewLocLng] = useState(30.0606);
-  const [newLocIsEv, setNewLocIsEv] = useState(false);
-  const [newLocIsHandicap, setNewLocIsHandicap] = useState(false);
+  const [newLocIsEv, setNewLocIsEv] = useState(true);
+  const [newLocEvPowerKw, setNewLocEvPowerKw] = useState(60);
+  const [newLocEvRateKwh, setNewLocEvRateKwh] = useState(250);
+  const [newLocEvConnectors, setNewLocEvConnectors] = useState("CCS2 Combo, Type 2");
+  const [newLocIsHandicap, setNewLocIsHandicap] = useState(true);
+  const [newLocFacilities, setNewLocFacilities] = useState<string[]>([
+    "CCTV Surveillance",
+    "24/7 Security Patrol",
+    "Underground Covered",
+    "MoMo QR Payment",
+  ]);
+  const [newLocGateInfo, setNewLocGateInfo] = useState("Entry Gate A · Exit Gate B");
 
   // Edit Location Form State
   const [editLocName, setEditLocName] = useState("");
   const [editLocAddress, setEditLocAddress] = useState("");
+  const [editLocImageUrl, setEditLocImageUrl] = useState<string | null>(null);
   const [editLocTopology, setEditLocTopology] = useState<"oblique" | "perpendicular" | "parallel" | "wide">("perpendicular");
+  const [editLocFloors, setEditLocFloors] = useState("4 Levels (Underground B1-B4)");
   const [editLocHourly, setEditLocHourly] = useState(300);
   const [editLocDaily, setEditLocDaily] = useState(2000);
   const [editLocStatus, setEditLocStatus] = useState<"active" | "inactive" | "maintenance">("active");
+  const [editLocIsEv, setEditLocIsEv] = useState(false);
+  const [editLocEvPowerKw, setEditLocEvPowerKw] = useState(60);
+  const [editLocEvRateKwh, setEditLocEvRateKwh] = useState(250);
+  const [editLocEvConnectors, setEditLocEvConnectors] = useState("CCS2 Combo, Type 2");
+  const [editLocIsHandicap, setEditLocIsHandicap] = useState(false);
+  const [editLocFacilities, setEditLocFacilities] = useState<string[]>([
+    "CCTV Surveillance",
+    "24/7 Security Patrol",
+  ]);
+  const [editLocGateInfo, setEditLocGateInfo] = useState("Entry Gate A · Exit Gate B");
 
   // Bulk space generator form state
   const [genPrefix, setGenPrefix] = useState("A-");
@@ -65,6 +103,7 @@ export default function LocationsPage() {
   const [bayTypeInput, setBayTypeInput] = useState<"regular" | "ev" | "handicap">("regular");
   const [bayZoneInput, setBayZoneInput] = useState("Zone A");
   const [bayPriceInput, setBayPriceInput] = useState<number | string>("");
+  const [bayImageUrl, setBayImageUrl] = useState<string | null>(null);
 
   // Real-time indicator animation
   const [lastRealtimeEvent, setLastRealtimeEvent] = useState<string | null>(null);
@@ -162,6 +201,18 @@ export default function LocationsPage() {
         qr_code_identifier: "QR-" + Math.random().toString(36).substring(2, 9).toUpperCase(),
         is_electric_station: newLocIsEv,
         is_handicap_facility: newLocIsHandicap,
+        image_url: newLocImageUrl,
+        facilities: newLocFacilities,
+        opening_hours: {
+          open: "06:00",
+          close: "22:00",
+          "24_7": true,
+          floors: newLocFloors,
+          ev_power_kw: newLocEvPowerKw,
+          ev_connectors: newLocEvConnectors,
+          ev_rate_kwh: newLocEvRateKwh,
+          gate_info: newLocGateInfo,
+        },
         status: "active",
       });
       if (created) {
@@ -172,6 +223,7 @@ export default function LocationsPage() {
       setShowCreateLocationModal(false);
       setNewLocName("");
       setNewLocAddress("");
+      setNewLocImageUrl(null);
     } catch (err) {
       console.error("Failed creating location in DB:", err);
     }
@@ -186,6 +238,17 @@ export default function LocationsPage() {
     setEditLocHourly(selectedLocation.hourly_rate);
     setEditLocDaily(selectedLocation.daily_rate);
     setEditLocStatus(selectedLocation.status);
+    setEditLocImageUrl(selectedLocation.image_url || null);
+    setEditLocIsEv(Boolean(selectedLocation.is_electric_station));
+    setEditLocIsHandicap(Boolean(selectedLocation.is_handicap_facility));
+    setEditLocFacilities(selectedLocation.facilities || ["CCTV Surveillance", "24/7 Security Patrol"]);
+
+    const extra = (selectedLocation.opening_hours as any) || {};
+    setEditLocFloors(extra.floors || "4 Levels (Underground B1-B4)");
+    setEditLocEvPowerKw(Number(extra.ev_power_kw || 60));
+    setEditLocEvRateKwh(Number(extra.ev_rate_kwh || 250));
+    setEditLocEvConnectors(extra.ev_connectors || "CCS2 Combo, Type 2");
+    setEditLocGateInfo(extra.gate_info || "Entry Gate A · Exit Gate B");
     setShowEditLocationModal(true);
   };
 
@@ -200,6 +263,21 @@ export default function LocationsPage() {
         hourly_rate: Number(editLocHourly),
         daily_rate: Number(editLocDaily),
         status: editLocStatus,
+        image_url: editLocImageUrl,
+        is_electric_station: editLocIsEv,
+        is_handicap_facility: editLocIsHandicap,
+        facilities: editLocFacilities,
+        opening_hours: {
+          ...((selectedLocation.opening_hours as any) || {}),
+          open: "06:00",
+          close: "22:00",
+          "24_7": true,
+          floors: editLocFloors,
+          ev_power_kw: editLocEvPowerKw,
+          ev_connectors: editLocEvConnectors,
+          ev_rate_kwh: editLocEvRateKwh,
+          gate_info: editLocGateInfo,
+        },
       });
       if (updated) {
         setSelectedLocation(updated);
@@ -267,6 +345,7 @@ export default function LocationsPage() {
     setBayTypeInput(bay.space_type);
     setBayZoneInput(bay.zone_code);
     setBayPriceInput(bay.price_per_hour_rwf ?? "");
+    setBayImageUrl(bay.image_url || null);
     setShowBayControlModal(true);
   };
 
@@ -300,6 +379,7 @@ export default function LocationsPage() {
         current_vehicle_plate: isOccupied ? bayPlateInput.trim().toUpperCase() : null,
         occupied_at: isOccupied ? (selectedBay.occupied_at || new Date().toISOString()) : null,
         price_per_hour_rwf: priceVal,
+        image_url: bayImageUrl,
       });
 
       if (updated) {
@@ -438,12 +518,43 @@ export default function LocationsPage() {
                     <div
                       key={loc.id}
                       onClick={() => handleSelectLocation(loc)}
-                      className={`p-5 rounded-2xl border transition-all cursor-pointer ${
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
                           ? "bg-white dark:bg-[#181d26] border-neutral-900 dark:border-neutral-300 shadow-md ring-1 ring-neutral-900/10 dark:ring-white/10"
                           : "bg-white dark:bg-[#151921] border-[#e8ecf1] dark:border-[#202734] hover:border-neutral-400"
                       }`}
                     >
+                      {/* Facility Photo / Cover Preview */}
+                      {loc.image_url ? (
+                        <div className="relative w-full h-28 rounded-xl overflow-hidden mb-3 border border-neutral-200/60 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800">
+                          <img
+                            src={loc.image_url}
+                            alt={loc.name}
+                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                          <span className="absolute bottom-2 left-2 text-[10px] font-bold text-white px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs uppercase tracking-wider">
+                            {loc.layout_topology}
+                          </span>
+                          {loc.is_electric_station && (
+                            <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white shadow-sm flex items-center gap-1">
+                              <span>⚡ EV Fast</span>
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="w-full h-11 rounded-xl mb-3 bg-neutral-100 dark:bg-neutral-800/60 border border-dashed border-neutral-200 dark:border-neutral-700 flex items-center justify-between px-3 text-[11px] text-neutral-400">
+                          <span className="capitalize font-medium flex items-center gap-1.5">
+                            📐 {loc.layout_topology} Layout
+                          </span>
+                          {loc.is_electric_station && (
+                            <span className="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 font-bold text-[10px]">
+                              ⚡ EV Station
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="flex items-center gap-2">
@@ -453,7 +564,7 @@ export default function LocationsPage() {
                             >
                               {loc.name}
                             </h4>
-                            {loc.is_electric_station && (
+                            {loc.is_electric_station && !loc.image_url && (
                               <span className="w-2 h-2 rounded-full bg-blue-500" title="EV Charging Hub" />
                             )}
                           </div>
@@ -470,12 +581,14 @@ export default function LocationsPage() {
                           )}
                         </div>
 
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 uppercase tracking-wider shrink-0">
-                          {loc.layout_topology}
-                        </span>
+                        {!loc.image_url && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 uppercase tracking-wider shrink-0">
+                            {loc.layout_topology}
+                          </span>
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 my-4 text-xs">
+                      <div className="grid grid-cols-3 gap-2 my-3 text-xs">
                         <div className="p-2.5 rounded-xl bg-[#f8f9fa] dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
                           <span className="text-[10px] text-neutral-400 block font-medium">Bays</span>
                           <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block">
@@ -557,6 +670,113 @@ export default function LocationsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* ────────────────── FACILITY SHOWCASE & CUSTOMIZATION BANNER ────────────────── */}
+              {selectedLocation && (
+                <div className="my-4 p-4 rounded-2xl bg-neutral-50 dark:bg-[#12161f] border border-neutral-200/80 dark:border-neutral-800/80 flex flex-col md:flex-row gap-4 items-stretch">
+                  {/* Facility Photo / Preview */}
+                  <div className="relative md:w-56 h-36 rounded-xl overflow-hidden shrink-0 border border-neutral-200 dark:border-neutral-700 bg-neutral-200 dark:bg-neutral-800 group">
+                    {selectedLocation.image_url ? (
+                      <img
+                        src={selectedLocation.image_url}
+                        alt={selectedLocation.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-center p-3 text-neutral-400">
+                        <svg className="w-8 h-8 mb-1 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-[10px] font-semibold">No facility picture</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleOpenEditLocation}
+                      className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-semibold transition-opacity backdrop-blur-xs"
+                    >
+                      Change Photo & Specs
+                    </button>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="flex-1 flex flex-col justify-between space-y-2 text-xs">
+                    {/* Topology & Circulation */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
+                        <span className="text-[10px] text-neutral-400 block font-medium">Layout Topology</span>
+                        <span className="font-bold text-neutral-800 dark:text-neutral-200 capitalize mt-0.5 block truncate">
+                          {selectedLocation.layout_topology === "perpendicular" && "90° Perpendicular"}
+                          {selectedLocation.layout_topology === "oblique" && "45° Oblique Traffic"}
+                          {selectedLocation.layout_topology === "parallel" && "0° Curbside Parallel"}
+                          {selectedLocation.layout_topology === "wide" && "Wide / Accessible"}
+                          {!["perpendicular", "oblique", "parallel", "wide"].includes(selectedLocation.layout_topology) && selectedLocation.layout_topology}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800">
+                        <span className="text-[10px] text-neutral-400 block font-medium">Floor Levels</span>
+                        <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block truncate">
+                          {(selectedLocation.opening_hours as any)?.floors || "Multi-Level"}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#181d26] border border-neutral-100 dark:border-neutral-800 col-span-2 sm:col-span-1">
+                        <span className="text-[10px] text-neutral-400 block font-medium">Gate Circulation Flow</span>
+                        <span className="font-bold text-neutral-800 dark:text-neutral-200 mt-0.5 block truncate">
+                          {(selectedLocation.opening_hours as any)?.gate_info || "Ingress Gate A · Egress Gate B"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* EV Charging Info Banner (if enabled) */}
+                    {selectedLocation.is_electric_station ? (
+                      <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-600 text-white uppercase tracking-wider">
+                            ⚡ EV Fast Hub
+                          </span>
+                          <span className="text-[11px] font-semibold text-blue-900 dark:text-blue-300">
+                            {(selectedLocation.opening_hours as any)?.ev_power_kw || 60} kW Max Output · {(selectedLocation.opening_hours as any)?.ev_connectors || "CCS2 Combo, Type 2"}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-mono font-bold text-blue-800 dark:text-blue-200">
+                          {formatCurrency((selectedLocation.opening_hours as any)?.ev_rate_kwh || 250)}/kWh
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60 text-neutral-500 text-[11px] flex items-center justify-between">
+                        <span>Standard ICE Facility (EV charging not equipped)</span>
+                        <button
+                          onClick={handleOpenEditLocation}
+                          className="text-neutral-700 dark:text-neutral-300 font-semibold hover:underline"
+                        >
+                          + Enable EV Charging
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Amenities Chips */}
+                    {selectedLocation.facilities && selectedLocation.facilities.length > 0 && (
+                      <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                        {selectedLocation.facilities.map((am) => (
+                          <span
+                            key={am}
+                            className="px-2 py-0.5 rounded-lg text-[10px] font-medium bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 shadow-2xs"
+                          >
+                            ✓ {am}
+                          </span>
+                        ))}
+                        <button
+                          onClick={handleOpenEditLocation}
+                          className="text-[10px] text-neutral-400 hover:text-black dark:hover:text-white font-medium ml-1"
+                        >
+                          Edit Amenities
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Filters Bar: Zone Selector, Status, Type, and Search */}
               <div className="py-4 border-b border-neutral-100 dark:border-neutral-800 space-y-3">
@@ -646,9 +866,16 @@ export default function LocationsPage() {
                       >
                         {/* Bay Top Row: Number & Type Badge */}
                         <div className="flex items-center justify-between">
-                          <span className={`font-mono font-extrabold text-xs tracking-wider ${isOccupied ? "text-white" : "text-neutral-900 dark:text-white"}`}>
-                            {space.space_number}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`font-mono font-extrabold text-xs tracking-wider ${isOccupied ? "text-white" : "text-neutral-900 dark:text-white"}`}>
+                              {space.space_number}
+                            </span>
+                            {space.image_url && (
+                              <span className="text-[10px]" title="Overhead camera / photo attached">
+                                📷
+                              </span>
+                            )}
+                          </div>
                           <span
                             className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider ${
                               isEv
@@ -847,6 +1074,16 @@ export default function LocationsPage() {
                 />
               </div>
 
+              {/* Bay Photo / Camera Capture */}
+              <div className="pt-1">
+                <ImageInputControl
+                  label="Bay Overhead Camera / Photo"
+                  value={bayImageUrl}
+                  onChange={setBayImageUrl}
+                  helperText="Upload a photo of this bay, optical ANPR camera feed, or pick a preset"
+                />
+              </div>
+
               {/* Action Buttons */}
               <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
@@ -973,68 +1210,115 @@ export default function LocationsPage() {
       {/* ────────────────── MODAL: CREATE FACILITY ────────────────── */}
       {showCreateLocationModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
-                Register New Kigali Parking Facility
-              </h3>
+              <div>
+                <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
+                  Register New Kigali Parking Facility
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Configure facility photos, architectural layout topology, EV fast charging, and amenities.
+                </p>
+              </div>
               <button
                 onClick={() => setShowCreateLocationModal(false)}
-                className="text-neutral-400 hover:text-black dark:hover:text-white"
+                className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleCreateLocation} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold mb-1">Facility Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Nyarutarama Plaza Parking"
-                  value={newLocName}
-                  onChange={(e) => setNewLocName(e.target.value)}
-                  className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Address / Street</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. KG 9 Ave, Gasabo District"
-                  value={newLocAddress}
-                  onChange={(e) => setNewLocAddress(e.target.value)}
-                  className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleCreateLocation} className="space-y-4 text-xs">
+              {/* Photo Showcase */}
+              <ImageInputControl
+                label="Facility Showcase Picture / Architectural Photo"
+                value={newLocImageUrl}
+                onChange={setNewLocImageUrl}
+                helperText="Upload a photo from your computer, paste a direct web image link, or pick a Kigali preset"
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Topology</label>
-                  <select
-                    value={newLocTopology}
-                    onChange={(e) => setNewLocTopology(e.target.value as any)}
+                  <label className="block font-semibold mb-1">Facility Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Nyarutarama Plaza Parking"
+                    value={newLocName}
+                    onChange={(e) => setNewLocName(e.target.value)}
                     className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                  >
-                    <option value="oblique">Oblique (45° angle)</option>
-                    <option value="perpendicular">Perpendicular (90° standard)</option>
-                    <option value="parallel">Parallel (Curbside 0°)</option>
-                    <option value="wide">Wide (Accessible / Fleet Stalls)</option>
-                  </select>
+                  />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Total Spots</label>
+                  <label className="block font-semibold mb-1">Address / Street</label>
                   <input
-                    type="number"
-                    value={newLocSpots}
-                    onChange={(e) => setNewLocSpots(Number(e.target.value))}
+                    type="text"
+                    required
+                    placeholder="e.g. KG 9 Ave, Gasabo District"
+                    value={newLocAddress}
+                    onChange={(e) => setNewLocAddress(e.target.value)}
                     className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
                   />
                 </div>
               </div>
+
+              {/* Layout Specifications */}
+              <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-[#12161f] border border-neutral-200/70 dark:border-neutral-800 space-y-3">
+                <span className="font-bold text-[11px] uppercase tracking-wider text-neutral-600 dark:text-neutral-300 block">
+                  Physical Layout & Blueprint
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold mb-1">Layout Topology</label>
+                    <select
+                      value={newLocTopology}
+                      onChange={(e) => setNewLocTopology(e.target.value as any)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none font-medium"
+                    >
+                      <option value="perpendicular">90° Perpendicular (Standard High-Density)</option>
+                      <option value="oblique">45° Oblique (One-Way Fast Traffic Flow)</option>
+                      <option value="parallel">0° Parallel (Curbside Drive Aisle)</option>
+                      <option value="wide">Wide Stall (Accessible / Fleet Stalls)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Total Bays Capacity</label>
+                    <input
+                      type="number"
+                      value={newLocSpots}
+                      onChange={(e) => setNewLocSpots(Number(e.target.value))}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold mb-1">Floor Levels / Multi-Story</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 4 Levels (Underground B1-B4)"
+                      value={newLocFloors}
+                      onChange={(e) => setNewLocFloors(e.target.value)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Circulation & Gate Flow</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Entry Gate A · Exit Gate B"
+                      value={newLocGateInfo}
+                      onChange={(e) => setNewLocGateInfo(e.target.value)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tariffs */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Hourly Tariff (RWF)</label>
+                  <label className="block font-semibold mb-1">Hourly Parking Tariff (RWF)</label>
                   <input
                     type="number"
                     value={newLocHourly}
@@ -1052,26 +1336,117 @@ export default function LocationsPage() {
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-4 pt-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newLocIsEv}
-                    onChange={(e) => setNewLocIsEv(e.target.checked)}
-                    className="rounded text-neutral-900"
-                  />
-                  <span>Equipped with EV Fast Charging</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newLocIsHandicap}
-                    onChange={(e) => setNewLocIsHandicap(e.target.checked)}
-                    className="rounded text-neutral-900"
-                  />
-                  <span>Designated Accessible Facility</span>
-                </label>
+
+              {/* EV Charging Capabilities */}
+              <div className="p-3.5 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-[11px] uppercase tracking-wider text-blue-900 dark:text-blue-300 block">
+                      EV Fast Charging Capabilities
+                    </span>
+                    <span className="text-[10px] text-blue-700 dark:text-blue-400">
+                      Showcase EV chargers, charging rates, and plug standards to drivers
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newLocIsEv}
+                      onChange={(e) => setNewLocIsEv(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                {newLocIsEv && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div>
+                      <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                        Max Power (kW)
+                      </label>
+                      <input
+                        type="number"
+                        value={newLocEvPowerKw}
+                        onChange={(e) => setNewLocEvPowerKw(Number(e.target.value))}
+                        className="w-full bg-white dark:bg-[#181d26] border border-blue-200 dark:border-blue-900/60 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                        Tariff (RWF/kWh)
+                      </label>
+                      <input
+                        type="number"
+                        value={newLocEvRateKwh}
+                        onChange={(e) => setNewLocEvRateKwh(Number(e.target.value))}
+                        className="w-full bg-white dark:bg-[#181d26] border border-blue-200 dark:border-blue-900/60 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                        Connectors / Plugs
+                      </label>
+                      <input
+                        type="text"
+                        value={newLocEvConnectors}
+                        onChange={(e) => setNewLocEvConnectors(e.target.value)}
+                        className="w-full bg-white dark:bg-[#181d26] border border-blue-200 dark:border-blue-900/60 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {/* Designated Accessible Facility */}
+              <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl bg-neutral-50 dark:bg-[#12161f] border border-neutral-200/70 dark:border-neutral-800">
+                <input
+                  type="checkbox"
+                  checked={newLocIsHandicap}
+                  onChange={(e) => setNewLocIsHandicap(e.target.checked)}
+                  className="rounded text-neutral-900 w-4 h-4"
+                />
+                <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                  Designated Accessible Facility (Step-free elevators, wide accessible stalls)
+                </span>
+              </label>
+
+              {/* Facility Amenities */}
+              <div>
+                <label className="block font-semibold mb-1.5 text-neutral-700 dark:text-neutral-300">
+                  Included Amenities & Security Features
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {AVAILABLE_AMENITIES.map((amenity) => {
+                    const checked = newLocFacilities.includes(amenity);
+                    return (
+                      <label
+                        key={amenity}
+                        className={`flex items-center gap-2 p-2 rounded-xl border text-[11px] cursor-pointer transition-all ${
+                          checked
+                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 font-semibold"
+                            : "bg-[#f8f9fa] dark:bg-[#181d26] border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setNewLocFacilities([...newLocFacilities, amenity]);
+                            } else {
+                              setNewLocFacilities(newLocFacilities.filter((a) => a !== amenity));
+                            }
+                          }}
+                          className="sr-only"
+                        />
+                        <span>{checked ? "✓ " : "+ "}{amenity}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2 pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
@@ -1095,66 +1470,113 @@ export default function LocationsPage() {
       {/* ────────────────── MODAL: EDIT FACILITY SETTINGS ────────────────── */}
       {showEditLocationModal && selectedLocation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#151921] rounded-2xl border border-neutral-200 dark:border-neutral-800 max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
-              <h3 className="font-bold text-sm text-neutral-900 dark:text-white">
-                Facility Settings & Governance
-              </h3>
+              <div>
+                <h3 className="font-extrabold text-base text-neutral-900 dark:text-white">
+                  Facility Settings & Customizations
+                </h3>
+                <p className="text-xs text-neutral-400 mt-0.5">
+                  Update facility pictures, layout blueprint, EV charging specifications, and guest amenities.
+                </p>
+              </div>
               <button
                 onClick={() => setShowEditLocationModal(false)}
-                className="text-neutral-400 hover:text-black dark:hover:text-white"
+                className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 hover:text-black dark:hover:text-white"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleUpdateLocation} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold mb-1">Facility Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editLocName}
-                  onChange={(e) => setEditLocName(e.target.value)}
-                  className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Address</label>
-                <input
-                  type="text"
-                  required
-                  value={editLocAddress}
-                  onChange={(e) => setEditLocAddress(e.target.value)}
-                  className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleUpdateLocation} className="space-y-4 text-xs">
+              {/* Photo Showcase */}
+              <ImageInputControl
+                label="Facility Showcase Picture / Architectural Photo"
+                value={editLocImageUrl}
+                onChange={setEditLocImageUrl}
+                helperText="Upload a photo from your computer, paste a direct web image link, or pick a Kigali preset"
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">Topology</label>
-                  <select
-                    value={editLocTopology}
-                    onChange={(e) => setEditLocTopology(e.target.value as any)}
+                  <label className="block font-semibold mb-1">Facility Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editLocName}
+                    onChange={(e) => setEditLocName(e.target.value)}
                     className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                  >
-                    <option value="oblique">Oblique (45° angle)</option>
-                    <option value="perpendicular">Perpendicular (90° standard)</option>
-                    <option value="parallel">Parallel (Curbside 0°)</option>
-                    <option value="wide">Wide (Accessible / Fleet Stalls)</option>
-                  </select>
+                  />
                 </div>
                 <div>
-                  <label className="block font-semibold mb-1">Status</label>
-                  <select
-                    value={editLocStatus}
-                    onChange={(e) => setEditLocStatus(e.target.value as any)}
+                  <label className="block font-semibold mb-1">Address</label>
+                  <input
+                    type="text"
+                    required
+                    value={editLocAddress}
+                    onChange={(e) => setEditLocAddress(e.target.value)}
                     className="w-full bg-[#f8f9fa] dark:bg-[#12161f] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
-                  >
-                    <option value="active">Active Operational</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="inactive">Suspended / Inactive</option>
-                  </select>
+                  />
                 </div>
               </div>
+
+              {/* Layout Specifications */}
+              <div className="p-3.5 rounded-xl bg-neutral-50 dark:bg-[#12161f] border border-neutral-200/70 dark:border-neutral-800 space-y-3">
+                <span className="font-bold text-[11px] uppercase tracking-wider text-neutral-600 dark:text-neutral-300 block">
+                  Physical Layout & Blueprint
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold mb-1">Layout Topology</label>
+                    <select
+                      value={editLocTopology}
+                      onChange={(e) => setEditLocTopology(e.target.value as any)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none font-medium"
+                    >
+                      <option value="perpendicular">90° Perpendicular (Standard High-Density)</option>
+                      <option value="oblique">45° Oblique (One-Way Fast Traffic Flow)</option>
+                      <option value="parallel">0° Parallel (Curbside Drive Aisle)</option>
+                      <option value="wide">Wide Stall (Accessible / Fleet Stalls)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Operational Status</label>
+                    <select
+                      value={editLocStatus}
+                      onChange={(e) => setEditLocStatus(e.target.value as any)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    >
+                      <option value="active">Active Operational</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="inactive">Suspended / Inactive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold mb-1">Floor Levels / Multi-Story</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 4 Levels (Underground B1-B4)"
+                      value={editLocFloors}
+                      onChange={(e) => setEditLocFloors(e.target.value)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold mb-1">Circulation & Gate Flow</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Entry Gate A · Exit Gate B"
+                      value={editLocGateInfo}
+                      onChange={(e) => setEditLocGateInfo(e.target.value)}
+                      className="w-full bg-white dark:bg-[#181d26] border border-neutral-200 dark:border-neutral-700 rounded-xl px-3 py-2 text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tariffs */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold mb-1">Hourly Tariff (RWF)</label>
@@ -1175,6 +1597,117 @@ export default function LocationsPage() {
                   />
                 </div>
               </div>
+
+              {/* EV Charging Capabilities */}
+              <div className="p-3.5 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-[11px] uppercase tracking-wider text-blue-900 dark:text-blue-300 block">
+                      EV Fast Charging Capabilities
+                    </span>
+                    <span className="text-[10px] text-blue-700 dark:text-blue-400">
+                      Display charging rates, max power, and plug types to EV drivers
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editLocIsEv}
+                      onChange={(e) => setEditLocIsEv(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-neutral-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+
+                {editLocIsEv && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div>
+                      <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                        Max Power (kW)
+                      </label>
+                      <input
+                        type="number"
+                        value={editLocEvPowerKw}
+                        onChange={(e) => setEditLocEvPowerKw(Number(e.target.value))}
+                        className="w-full bg-white dark:bg-[#181d26] border border-blue-200 dark:border-blue-900/60 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                        Tariff (RWF/kWh)
+                      </label>
+                      <input
+                        type="number"
+                        value={editLocEvRateKwh}
+                        onChange={(e) => setEditLocEvRateKwh(Number(e.target.value))}
+                        className="w-full bg-white dark:bg-[#181d26] border border-blue-200 dark:border-blue-900/60 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1 text-neutral-700 dark:text-neutral-300">
+                        Connectors / Plugs
+                      </label>
+                      <input
+                        type="text"
+                        value={editLocEvConnectors}
+                        onChange={(e) => setEditLocEvConnectors(e.target.value)}
+                        className="w-full bg-white dark:bg-[#181d26] border border-blue-200 dark:border-blue-900/60 rounded-xl px-3 py-1.5 text-xs focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Designated Accessible Facility */}
+              <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl bg-neutral-50 dark:bg-[#12161f] border border-neutral-200/70 dark:border-neutral-800">
+                <input
+                  type="checkbox"
+                  checked={editLocIsHandicap}
+                  onChange={(e) => setEditLocIsHandicap(e.target.checked)}
+                  className="rounded text-neutral-900 w-4 h-4"
+                />
+                <span className="font-semibold text-neutral-800 dark:text-neutral-200">
+                  Designated Accessible Facility (Step-free elevators, wide accessible stalls)
+                </span>
+              </label>
+
+              {/* Facility Amenities */}
+              <div>
+                <label className="block font-semibold mb-1.5 text-neutral-700 dark:text-neutral-300">
+                  Included Amenities & Security Features
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {AVAILABLE_AMENITIES.map((amenity) => {
+                    const checked = editLocFacilities.includes(amenity);
+                    return (
+                      <label
+                        key={amenity}
+                        className={`flex items-center gap-2 p-2 rounded-xl border text-[11px] cursor-pointer transition-all ${
+                          checked
+                            ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 font-semibold"
+                            : "bg-[#f8f9fa] dark:bg-[#181d26] border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setEditLocFacilities([...editLocFacilities, amenity]);
+                            } else {
+                              setEditLocFacilities(editLocFacilities.filter((a) => a !== amenity));
+                            }
+                          }}
+                          className="sr-only"
+                        />
+                        <span>{checked ? "✓ " : "+ "}{amenity}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between pt-3 border-t border-neutral-100 dark:border-neutral-800">
                 <button
                   type="button"
