@@ -762,15 +762,17 @@ export default function LandingPage() {
       <footer className="relative -mt-12 sm:-mt-16 pt-24 sm:pt-32 bg-[#161515] pz-grain text-neutral-400 overflow-hidden">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-1">
-            <img
-              src="/picon.webp"
-              alt="ParkZone"
-              width={32}
-              height={32}
-              loading="lazy"
-              decoding="async"
-              className="w-8 h-8 rounded-lg object-contain"
-            />
+            <Link href="/" className="inline-block" aria-label="ParkZone Home">
+              <img
+                src="/picon.webp"
+                alt="ParkZone"
+                width={40}
+                height={40}
+                loading="lazy"
+                decoding="async"
+                className="w-9 h-9 sm:w-10 sm:h-10 object-contain brightness-0 invert transition-opacity hover:opacity-80"
+              />
+            </Link>
             <p className="mt-4 text-xs leading-relaxed text-neutral-500 max-w-[220px]">
               Smart parking and EV charging for the City of Kigali.
             </p>
