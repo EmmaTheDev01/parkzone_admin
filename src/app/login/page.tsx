@@ -206,8 +206,14 @@ export default function LoginPage() {
         <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between">
             <Link href="/" className="flex items-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.png" alt="ParkZone" className="h-7 sm:h-8 w-auto object-contain" />
+              <img
+                src="/logo.webp"
+                alt="ParkZone"
+                width={140}
+                height={32}
+                className="h-7 sm:h-8 w-auto object-contain"
+                fetchPriority="high"
+              />
             </Link>
           </div>
         </header>
@@ -238,8 +244,14 @@ export default function LoginPage() {
       <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="ParkZone" className="h-7 sm:h-8 w-auto object-contain" />
+            <img
+              src="/logo.webp"
+              alt="ParkZone"
+              width={140}
+              height={32}
+              className="h-7 sm:h-8 w-auto object-contain"
+              fetchPriority="high"
+            />
           </Link>
           <Link
             href="/"

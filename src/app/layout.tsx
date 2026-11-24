@@ -6,16 +6,19 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const newsreader = Newsreader({
   variable: "--font-serif-display",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {

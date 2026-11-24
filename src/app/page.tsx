@@ -2,9 +2,18 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import AnimatedGlobe from "@/components/AnimatedGlobe";
+import dynamic from "next/dynamic";
 
-/* ────────────────── Scroll reveal (Popcorn-style soft rise) ────────────────── */
+const AnimatedGlobe = dynamic(() => import("@/components/AnimatedGlobe"), {
+  ssr: false,
+  loading: () => (
+    <div className="relative w-full max-w-[340px] sm:max-w-[400px] aspect-square flex items-center justify-center">
+      <div className="w-full h-full rounded-full bg-gradient-to-br from-white via-slate-100 to-slate-200 animate-pulse opacity-60" />
+    </div>
+  ),
+});
+
+/* ────────────────── Scroll reveal (Snappy Popcorn-style soft rise) ────────────────── */
 function Reveal({
   children,
   delay = 0,
@@ -20,6 +29,14 @@ function Reveal({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    // Immediately reveal elements that are already within or close to initial view
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight + 100) {
+      setVisible(true);
+      return;
+    }
+
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -27,7 +44,7 @@ function Reveal({
           io.disconnect();
         }
       },
-      { threshold: 0.15 }
+      { rootMargin: "150px 0px", threshold: 0.01 }
     );
     io.observe(el);
     return () => io.disconnect();
@@ -36,8 +53,8 @@ function Reveal({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+      className={`transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
@@ -187,30 +204,41 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#161515] text-[#2B2A2A] font-sans antialiased selection:bg-emerald-200 selection:text-neutral-900 overflow-x-hidden">
       {/* ══════════════ MAIN SHEET (rounded bottom over dark footer) ══════════════ */}
       <div className="relative z-10 bg-[#F7F7F6] rounded-b-[32px] sm:rounded-b-[48px] overflow-hidden">
-        {/* ────────────────── NAVBAR ────────────────── */}
-        <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between">
-            <div className="flex items-center gap-8 lg:gap-10">
+        {/* ────────────────── NAVBAR (CENTERED NAVIGATION MENU) ────────────────── */}
+        <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md border-b border-black/[0.04]">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between relative">
+            {/* Left: Logo */}
+            <div className="flex items-center z-10">
               <Link href="/" className="flex items-center gap-2 shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo.png" alt="ParkZone" className="h-7 sm:h-8 w-auto object-contain" />
+                <img
+                  src="/logo.webp"
+                  alt="ParkZone"
+                  width={140}
+                  height={32}
+                  className="h-7 sm:h-8 w-auto object-contain"
+                  fetchPriority="high"
+                  decoding="async"
+                />
               </Link>
-              <nav className="hidden md:flex items-center gap-7 text-sm text-neutral-500">
-                <a href="#" className="relative text-neutral-900 font-medium after:absolute after:left-0 after:right-0 after:-bottom-1.5 after:h-[1.5px] after:bg-neutral-900">
-                  Home
-                </a>
-                {navLinks.map((l) => (
-                  <a key={l.href} href={l.href} className="hover:text-neutral-900 transition-colors">
-                    {l.label}
-                  </a>
-                ))}
-                <Link href="/contact" className="hover:text-neutral-900 transition-colors">
-                  Support
-                </Link>
-              </nav>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Center: Navigation Menu */}
+            <nav className="hidden md:flex items-center gap-8 text-sm text-neutral-500 absolute left-1/2 -translate-x-1/2 z-10">
+              <a href="#" className="relative text-neutral-900 font-medium after:absolute after:left-0 after:right-0 after:-bottom-1.5 after:h-[1.5px] after:bg-neutral-900">
+                Home
+              </a>
+              {navLinks.map((l) => (
+                <a key={l.href} href={l.href} className="hover:text-neutral-900 transition-colors">
+                  {l.label}
+                </a>
+              ))}
+              <Link href="/contact" className="hover:text-neutral-900 transition-colors">
+                Support
+              </Link>
+            </nav>
+
+            {/* Right: Actions & Mobile Hamburger */}
+            <div className="flex items-center gap-2 z-10">
               <a
                 href="#download"
                 className="hidden sm:inline-flex px-5 py-2 rounded-full bg-[#2B2A2A] hover:bg-black text-white text-sm font-medium transition-all hover:-translate-y-0.5"
@@ -307,17 +335,23 @@ export default function LandingPage() {
               <div className="pointer-events-none absolute left-1/2 top-[6%] -translate-x-1/2 w-[92%] h-[100%] rounded-[50%] shadow-[inset_0_0_60px_30px_#F7F7F6]" />
 
               {/* Left phone */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/screenshots/ev-map-navigation.png"
+                src="/screenshots/ev-map-navigation.webp"
                 alt="ParkZone live EV navigation"
+                width={260}
+                height={530}
+                fetchPriority="high"
+                decoding="async"
                 className="absolute left-[8%] sm:left-[10%] top-[14%] w-[46%] -rotate-[8deg] drop-shadow-[0_30px_40px_rgba(0,0,0,0.22)] z-20 select-none"
               />
               {/* Right phone */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/screenshots/parking-spot-selection.png"
+                src="/screenshots/parking-spot-selection.webp"
                 alt="ParkZone spot reservation"
+                width={250}
+                height={510}
+                fetchPriority="high"
+                decoding="async"
                 className="absolute right-[8%] sm:right-[10%] top-[10%] w-[44%] rotate-[9deg] drop-shadow-[0_24px_34px_rgba(0,0,0,0.18)] z-10 select-none"
               />
             </div>
@@ -724,10 +758,13 @@ export default function LandingPage() {
 
             {/* Center tilted phone */}
             <div className="hidden md:block pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[54%] w-[230px] lg:w-[250px] z-20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/screenshots/parking-spot-selection.png"
+                src="/screenshots/parking-spot-selection.webp"
                 alt="ParkZone app"
+                width={250}
+                height={510}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-auto rotate-[12deg] drop-shadow-[0_30px_40px_rgba(0,0,0,0.3)]"
               />
             </div>
@@ -739,8 +776,15 @@ export default function LandingPage() {
       <footer className="relative -mt-12 sm:-mt-16 pt-24 sm:pt-32 bg-[#161515] pz-grain text-neutral-400 overflow-hidden">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/picon.png" alt="ParkZone" className="w-8 h-8 rounded-lg object-contain" />
+            <img
+              src="/picon.webp"
+              alt="ParkZone"
+              width={32}
+              height={32}
+              loading="lazy"
+              decoding="async"
+              className="w-8 h-8 rounded-lg object-contain"
+            />
             <p className="mt-4 text-xs leading-relaxed text-neutral-500 max-w-[220px]">
               Smart parking and EV charging for the City of Kigali.
             </p>

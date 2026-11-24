@@ -4,9 +4,10 @@ import React, { useEffect, useRef } from "react";
 import landDots from "./globe-land-dots.json";
 
 /**
- * Popcorn-style dotted globe.
- * A pale frosted sphere with dotted continents (orthographic projection),
- * gently swaying around Africa so the Kigali beacon stays in view.
+ * Optimized Popcorn-style dotted globe.
+ * - Only runs animation loop when visible in viewport (IntersectionObserver)
+ * - Batches dots by depth into 3 draw calls per frame (down from 1,500+)
+ * - Automatically pauses on hidden tab or out-of-view scroll
  */
 const KIGALI: [number, number] = [30.06, -1.95];
 const DEG = Math.PI / 180;
@@ -19,14 +20,14 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
     const wrap = wrapRef.current;
     const canvas = canvasRef.current;
     if (!wrap || !canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const dots = landDots as [number, number][];
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let size = 0;
     let raf = 0;
-    let visible = true;
+    let isVisible = false;
     const start = performance.now();
 
     const resize = () => {
@@ -51,6 +52,8 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
     };
 
     const draw = (now: number) => {
+      if (!isVisible && !reduce) return;
+
       const t = (now - start) / 1000;
       const c = size / 2;
       const r = size * 0.46;
@@ -70,18 +73,36 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
       ctx.arc(c, c, r, 0, Math.PI * 2);
       ctx.fill();
 
-      // Dotted continents
+      // Dotted continents - batched by depth into 3 passes
       const base = Math.max(1, size / 260);
+      const pathBack = new Path2D();
+      const pathMid = new Path2D();
+      const pathFront = new Path2D();
+
       for (let i = 0; i < dots.length; i++) {
         const [lon, lat] = dots[i];
         const p = project(lon, lat, lon0, lat0, r, c);
         if (p.z <= 0.02) continue;
-        const a = 0.18 + p.z * 0.5;
-        ctx.fillStyle = `rgba(140,165,205,${a})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, base * (0.55 + p.z * 0.5), 0, Math.PI * 2);
-        ctx.fill();
+
+        const radius = base * (0.55 + p.z * 0.5);
+        if (p.z < 0.35) {
+          pathBack.moveTo(p.x + radius, p.y);
+          pathBack.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        } else if (p.z < 0.7) {
+          pathMid.moveTo(p.x + radius, p.y);
+          pathMid.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        } else {
+          pathFront.moveTo(p.x + radius, p.y);
+          pathFront.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        }
       }
+
+      ctx.fillStyle = "rgba(140,165,205,0.32)";
+      ctx.fill(pathBack);
+      ctx.fillStyle = "rgba(140,165,205,0.52)";
+      ctx.fill(pathMid);
+      ctx.fillStyle = "rgba(140,165,205,0.78)";
+      ctx.fill(pathFront);
 
       // Rim light
       const rim = ctx.createRadialGradient(c, c, r * 0.82, c, c, r);
@@ -115,23 +136,31 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
         ctx.fill();
       }
 
-      if (!reduce && visible) raf = requestAnimationFrame(draw);
+      if (!reduce && isVisible) {
+        raf = requestAnimationFrame(draw);
+      }
     };
 
     resize();
-    raf = requestAnimationFrame(draw);
 
     const ro = new ResizeObserver(() => {
       resize();
-      if (reduce) draw(performance.now());
+      if (reduce || isVisible) draw(performance.now());
     });
     ro.observe(wrap);
 
-    const io = new IntersectionObserver(([e]) => {
-      const was = visible;
-      visible = e.isIntersecting;
-      if (visible && !was && !reduce) raf = requestAnimationFrame(draw);
-    });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        const was = isVisible;
+        isVisible = e.isIntersecting;
+        if (isVisible && !was && !reduce) {
+          raf = requestAnimationFrame(draw);
+        } else if (!isVisible && was) {
+          cancelAnimationFrame(raf);
+        }
+      },
+      { rootMargin: "100px" }
+    );
     io.observe(wrap);
 
     return () => {
@@ -151,8 +180,7 @@ export default function AnimatedGlobe({ className = "" }: { className?: string }
       </div>
 
       <div className="relative -mt-5 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full shadow-[0_6px_20px_rgba(0,0,0,0.08)] flex items-center gap-2 text-xs text-neutral-900 pointer-events-none z-20">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/picon.png" alt="" className="w-4 h-4 rounded-full object-contain" />
+        <img src="/picon.webp" alt="" width={16} height={16} className="w-4 h-4 rounded-full object-contain" />
         <span className="font-semibold tracking-tight">ParkZone</span>
         <span className="text-neutral-300">·</span>
         <span className="text-emerald-600 flex items-center gap-1.5 font-medium text-[11px]">
