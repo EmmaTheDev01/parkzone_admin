@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const AnimatedGlobe = dynamic(() => import("@/components/AnimatedGlobe"), {
   ssr: false,
@@ -53,10 +54,13 @@ function Reveal({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+      className={`transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[opacity,transform] transform-gpu ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       } ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
+      style={{
+        transitionDelay: `${delay}ms`,
+        transform: visible ? "translate3d(0, 0, 0)" : "translate3d(0, 16px, 0)",
+      }}
     >
       {children}
     </div>
@@ -97,7 +101,7 @@ function StoreBadges({ dark = true }: { dark?: boolean }) {
           <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.85c.67-.82 1.13-1.96 1-3.1-.98.04-2.17.65-2.87 1.47-.62.72-1.16 1.88-1.01 2.99 1.1.08 2.21-.54 2.88-1.36z" />
         </svg>
         <span className="text-left leading-none">
-          <span className={`block text-[9px] font-medium ${sub}`}>Download on the</span>
+          <span className={`block text-[9px] font-medium ${sub}`}>Get it on</span>
           <span className="block text-sm font-semibold tracking-tight mt-0.5">App Store</span>
         </span>
       </a>
@@ -202,10 +206,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#161515] text-[#2B2A2A] font-sans antialiased selection:bg-emerald-200 selection:text-neutral-900 overflow-x-hidden">
+      <SmoothScroll />
       {/* ══════════════ MAIN SHEET (rounded bottom over dark footer) ══════════════ */}
       <div className="relative z-10 bg-[#F7F7F6] rounded-b-[32px] sm:rounded-b-[48px] overflow-hidden">
         {/* ────────────────── NAVBAR (CENTERED NAVIGATION MENU) ────────────────── */}
-        <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md border-b border-black/[0.04]">
+        <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md border-b border-black/[0.04] transform-gpu will-change-transform">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between relative">
             {/* Left: Logo */}
             <div className="flex items-center z-10">
@@ -321,8 +326,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Phones over watercolor blob */}
-          <div className="pz-rise relative mt-10 sm:mt-14 flex justify-center" style={{ animationDelay: "320ms" }}>
+          {/* Phones over watercolor blob - GPU isolated */}
+          <div className="pz-rise relative mt-10 sm:mt-14 flex justify-center transform-gpu" style={{ animationDelay: "320ms" }}>
             <div className="relative w-full max-w-[560px] aspect-[1/1.02] sm:aspect-[1.05/1]">
               {/* Watercolor wash */}
               <div className="pointer-events-none absolute left-1/2 top-[6%] -translate-x-1/2 w-[86%] h-[94%] rounded-[50%] overflow-hidden">
@@ -570,16 +575,27 @@ export default function LandingPage() {
         </section>
 
         {/* ────────────────── OUR COVERAGE? GLAD YOU ASKED ────────────────── */}
-        <section className="relative px-5 sm:px-8 pb-24 sm:pb-32">
+        <section className="relative px-5 sm:px-8 pb-20 sm:pb-28">
           <div className="relative max-w-4xl mx-auto">
-            {/* Dotted map wash */}
-            <div
-              className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-[110%] sm:w-full h-[380px] sm:h-[420px] pz-dots opacity-70"
-              style={{
-                WebkitMaskImage: "radial-gradient(ellipse 55% 50% at 50% 45%, #000 40%, transparent 75%)",
-                maskImage: "radial-gradient(ellipse 55% 50% at 50% 45%, #000 40%, transparent 75%)",
-              }}
-            />
+            {/* Dotted map wash - Hardware accelerated with SVG dot pattern */}
+            <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-3xl h-[380px] sm:h-[420px] overflow-hidden transform-gpu opacity-45">
+              <svg className="w-full h-full" viewBox="0 0 800 420" fill="none" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <pattern id="dotPattern" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1.5" fill="#2B2A2A" fillOpacity="0.3" />
+                  </pattern>
+                  <radialGradient id="dotFade" cx="50%" cy="45%" r="48%">
+                    <stop offset="0%" stopColor="#fff" stopOpacity="1" />
+                    <stop offset="65%" stopColor="#fff" stopOpacity="0.8" />
+                    <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+                  </radialGradient>
+                  <mask id="mapMask">
+                    <rect width="100%" height="100%" fill="url(#dotFade)" />
+                  </mask>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#dotPattern)" mask="url(#mapMask)" />
+              </svg>
+            </div>
             <Reveal className="relative text-center pt-16 sm:pt-20">
               <Pill>The city is your oyster</Pill>
               <h2 className="mt-5 font-serif text-4xl sm:text-5xl md:text-[56px] leading-[1.05] tracking-[-0.015em] text-[#2B2A2A]">
@@ -598,7 +614,7 @@ export default function LandingPage() {
               {sectors.map((s, i) => (
                 <span
                   key={s.name}
-                  className="pz-float inline-flex items-center gap-2 rounded-full bg-white pl-2 pr-4 py-1.5 text-[13px] text-neutral-800 shadow-[0_6px_18px_rgba(0,0,0,0.07)]"
+                  className="pz-float inline-flex items-center gap-2 rounded-full bg-white pl-2 pr-4 py-1.5 text-[13px] text-neutral-800 shadow-[0_6px_18px_rgba(0,0,0,0.06)] transform-gpu"
                   style={{ ["--r" as string]: s.r, animationDelay: `${i * 0.35}s` } as React.CSSProperties}
                 >
                   {s.dot ? (
@@ -615,53 +631,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ────────────────── THE BEST FEATURE? THE MARSHALS ────────────────── */}
-        <section className="relative bg-gradient-to-b from-[#EFEEF3] to-[#F7F7F6] rounded-t-[32px] sm:rounded-t-[48px] px-5 sm:px-8 pt-20 sm:pt-28 pb-24 sm:pb-32">
-          <Reveal className="text-center max-w-xl mx-auto">
-            <h2 className="font-serif text-4xl sm:text-5xl md:text-[56px] leading-[1.05] tracking-[-0.015em] text-[#2B2A2A]">
-              The best feature?
-              <br />
-              The marshals.
-            </h2>
-            <p className="mt-4 text-[15px] text-neutral-500 leading-relaxed">
-              Fast and reliable dispatch support.
-              <br />
-              Helping with bays, EV charging, and a few laughs.
-            </p>
-          </Reveal>
-
-          <div className="mt-12 sm:mt-14 max-w-md mx-auto space-y-5">
-            {[
-              { who: "Aline", t: "14:15", m: "I'm at Kigali Heights underground with no signal. Is the DC charger bay free?", me: false, rot: "-2deg" },
-              { who: "Eric, Dispatch Lead", t: "14:16", m: "Bay EV-02 is reserved for RAD 892 B. The barrier will lift on its own.", me: true, rot: "1.5deg" },
-              { who: "Aline", t: "14:17", m: "Lifted in half a second. Five stars.", me: false, rot: "-1.5deg" },
-            ].map((c, i) => (
-              <Reveal key={i} delay={i * 180}>
-                <div className={`flex items-center gap-3 ${c.me ? "flex-row-reverse" : ""}`}>
-                  <div
-                    className={`w-12 h-12 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold ring-4 ring-white shadow-sm ${
-                      c.me ? "bg-emerald-600 text-white" : "bg-[#2B2A2A] text-white"
-                    }`}
-                  >
-                    {c.me ? "ER" : "AL"}
-                  </div>
-                  <div
-                    className={`flex-1 rounded-[22px] px-5 py-3.5 shadow-[0_6px_20px_rgba(0,0,0,0.05)] ${
-                      c.me ? "bg-white" : "bg-[#ECECEC]"
-                    }`}
-                    style={{ transform: `rotate(${c.rot})` }}
-                  >
-                    <div className="flex items-center justify-between text-[12px]">
-                      <span className="font-semibold text-neutral-900">{c.who}</span>
-                      <span className="text-neutral-400">{c.t}</span>
-                    </div>
-                    <p className="mt-0.5 text-[13px] text-neutral-700 leading-snug">{c.m}</p>
-                  </div>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        
 
         {/* ────────────────── FAQ ────────────────── */}
         <section id="faq" className="px-5 sm:px-8 pb-24 sm:pb-32 scroll-mt-20">
