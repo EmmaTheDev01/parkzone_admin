@@ -171,11 +171,28 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>("home");
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 15);
+
+      const sectionIds = ["faq", "coverage", "features"];
+      let current = "home";
+
+      for (const id of sectionIds) {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight * 0.4) {
+            current = id;
+            break;
+          }
+        }
+      }
+      setActiveSection(current);
     };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
@@ -209,9 +226,10 @@ export default function LandingPage() {
   ];
 
   const navLinks = [
-    { href: "#features", label: "Features" },
-    { href: "#coverage", label: "Coverage" },
-    { href: "#faq", label: "FAQ" },
+    { id: "home", href: "#home", label: "Home" },
+    { id: "features", href: "#features", label: "Features" },
+    { id: "coverage", href: "#coverage", label: "Coverage" },
+    { id: "faq", href: "#faq", label: "FAQ" },
   ];
 
   return (
@@ -243,17 +261,26 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Center: Navigation Menu */}
-            <nav className="hidden md:flex items-center gap-8 text-sm text-neutral-500 absolute left-1/2 -translate-x-1/2 z-10">
-              <a href="#" className="relative text-neutral-900 font-medium after:absolute after:left-0 after:right-0 after:-bottom-1.5 after:h-[1.5px] after:bg-neutral-900">
-                Home
-              </a>
-              {navLinks.map((l) => (
-                <a key={l.href} href={l.href} className="hover:text-neutral-900 transition-colors">
-                  {l.label}
-                </a>
-              ))}
-              <Link href="/contact" className="hover:text-neutral-900 transition-colors">
+            {/* Center: Dynamic Active Navigation Menu */}
+            <nav className="hidden md:flex items-center gap-8 text-sm absolute left-1/2 -translate-x-1/2 z-10">
+              {navLinks.map((l) => {
+                const isActive = activeSection === l.id;
+                return (
+                  <a
+                    key={l.id}
+                    href={l.href}
+                    onClick={() => setActiveSection(l.id)}
+                    className={`relative transition-colors duration-200 ${
+                      isActive
+                        ? "text-neutral-900 font-semibold after:absolute after:left-0 after:right-0 after:-bottom-1.5 after:h-[1.5px] after:bg-neutral-900 after:rounded-full"
+                        : "text-neutral-500 font-medium hover:text-neutral-900"
+                    }`}
+                  >
+                    {l.label}
+                  </a>
+                );
+              })}
+              <Link href="/contact" className="text-neutral-500 font-medium hover:text-neutral-900 transition-colors">
                 Support
               </Link>
             </nav>
@@ -286,16 +313,24 @@ export default function LandingPage() {
 
           {mobileMenuOpen && (
             <div className="md:hidden mx-4 mb-3 rounded-3xl bg-white shadow-[0_12px_40px_rgba(0,0,0,0.08)] px-6 py-5 space-y-4">
-              {navLinks.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block font-serif text-xl text-neutral-900"
-                >
-                  {l.label}
-                </a>
-              ))}
+              {navLinks.map((l) => {
+                const isActive = activeSection === l.id;
+                return (
+                  <a
+                    key={l.id}
+                    href={l.href}
+                    onClick={() => {
+                      setActiveSection(l.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`block font-serif text-xl ${
+                      isActive ? "text-emerald-600 font-semibold" : "text-neutral-900"
+                    }`}
+                  >
+                    {l.label}
+                  </a>
+                );
+              })}
               <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="block font-serif text-xl text-neutral-900">
                 Support
               </Link>
@@ -311,7 +346,7 @@ export default function LandingPage() {
         </header>
 
         {/* ────────────────── HERO ────────────────── */}
-        <section className="relative pt-12 sm:pt-16 md:pt-20 px-5 sm:px-8 max-w-6xl mx-auto">
+        <section id="home" className="relative pt-12 sm:pt-16 md:pt-20 px-5 sm:px-8 max-w-6xl mx-auto scroll-mt-28">
           <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
             <div className="pz-rise" style={{ animationDelay: "0ms" }}>
               <Pill>
@@ -764,13 +799,13 @@ export default function LandingPage() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block" aria-label="ParkZone Home">
               <img
-                src="/picon.webp"
+                src="/logo.webp"
                 alt="ParkZone"
-                width={40}
-                height={40}
+                width={140}
+                height={32}
                 loading="lazy"
                 decoding="async"
-                className="w-9 h-9 sm:w-10 sm:h-10 object-contain brightness-0 invert transition-opacity hover:opacity-80"
+                className="h-7 sm:h-8 w-auto object-contain brightness-0 invert transition-opacity hover:opacity-80"
               />
             </Link>
             <p className="mt-4 text-xs leading-relaxed text-neutral-500 max-w-[220px]">
