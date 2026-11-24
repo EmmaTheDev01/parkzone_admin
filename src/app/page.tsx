@@ -170,6 +170,16 @@ const sectors = [
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const faqs = [
     {
@@ -205,12 +215,18 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#161515] text-[#2B2A2A] font-sans antialiased selection:bg-emerald-200 selection:text-neutral-900 overflow-x-hidden">
+    <div className="min-h-screen bg-[#161515] text-[#2B2A2A] font-sans antialiased selection:bg-emerald-200 selection:text-neutral-900 overflow-x-clip">
       <SmoothScroll />
       {/* ══════════════ MAIN SHEET (rounded bottom over dark footer) ══════════════ */}
-      <div className="relative z-10 bg-[#F7F7F6] rounded-b-[32px] sm:rounded-b-[48px] overflow-hidden">
-        {/* ────────────────── NAVBAR (CENTERED NAVIGATION MENU) ────────────────── */}
-        <header className="sticky top-0 z-50 bg-[#F7F7F6]/85 backdrop-blur-md border-b border-black/[0.04] transform-gpu will-change-transform">
+      <div className="relative z-10 bg-[#F7F7F6] rounded-b-[32px] sm:rounded-b-[48px] overflow-clip">
+        {/* ────────────────── NAVBAR (CENTERED NAVIGATION MENU - STICKY) ────────────────── */}
+        <header
+          className={`sticky top-0 z-50 transform-gpu will-change-transform transition-all duration-200 border-b ${
+            scrolled
+              ? "bg-[#F7F7F6]/95 backdrop-blur-md border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.04)]"
+              : "bg-[#F7F7F6]/80 backdrop-blur-sm border-black/[0.03]"
+          }`}
+        >
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 sm:h-[72px] flex items-center justify-between relative">
             {/* Left: Logo */}
             <div className="flex items-center z-10">
