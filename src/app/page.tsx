@@ -826,9 +826,9 @@ export default function LandingPage() {
           <div>
             <div className="text-sm font-medium text-white mb-3">The Boring</div>
             <ul className="space-y-2 text-sm">
-              <li><span className="hover:text-white transition-colors cursor-pointer">Terms</span></li>
-              <li><span className="hover:text-white transition-colors cursor-pointer">City Bylaws</span></li>
-              <li><span className="hover:text-white transition-colors cursor-pointer">Privacy</span></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
+              <li><Link href="/bylaws" className="hover:text-white transition-colors">City Bylaws</Link></li>
+              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
             </ul>
           </div>
 
